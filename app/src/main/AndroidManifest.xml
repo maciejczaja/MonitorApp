@@ -6,7 +6,8 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
-    <uses-permission android:name="android.permission.READ_SMS" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
 
     <application
         android:allowBackup="true"
@@ -25,20 +26,10 @@
 
         <service android:name=".Sensors" />
         <service android:name=".NoiseDetector" />
+        <service android:name=".ScreenOnOffService" />
+        <service android:name=".SmsService" />
+        <service android:name=".CallService" />
 
-        <receiver android:name=".CallManager">
-            <intent-filter>
-                <action android:name="android.intent.action.PHONE_STATE" />
-                <action android:name="android.intent.action.NEW_OUTGOING_CALL" />
-            </intent-filter>
-        </receiver>
-        <receiver android:name=".SmsManager">
-            <intent-filter>
-                <action android:name="android.provider.Telephony.SMS_RECEIVED"></action>
-            </intent-filter>
-        </receiver>
-
-        <service android:name=".ScreenOnOff" />
     </application>
 
 </manifest>

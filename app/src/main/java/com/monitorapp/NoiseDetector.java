@@ -13,6 +13,7 @@ public class NoiseDetector extends Service {
     private MediaRecorder mRecorder = null;
     public static float dbCount = 40; //start value in dB
     Thread tmic;
+
     @Override
     public IBinder onBind(Intent intent) {
         return null;

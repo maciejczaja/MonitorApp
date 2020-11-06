@@ -8,7 +8,7 @@ import android.os.IBinder;
 import androidx.annotation.Nullable;
 
 
-public class ScreenOnOff extends Service {
+public class ScreenOnOffService extends Service {
 
     private ScreenOnOffReceiver mScreenReceiver;
 
@@ -20,23 +20,15 @@ public class ScreenOnOff extends Service {
 
     @Override
     public void onCreate() {
-        registerScreenStatusReceiver();
+        mScreenReceiver = new ScreenOnOffReceiver();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_SCREEN_ON);
+        filter.addAction(Intent.ACTION_SCREEN_OFF);
+        registerReceiver(mScreenReceiver, filter);
     }
 
     @Override
     public void onDestroy() {
-        unregisterScreenStatusReceiver();
-    }
-
-    private void registerScreenStatusReceiver() {
-        mScreenReceiver = new ScreenOnOffReceiver();
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Intent.ACTION_SCREEN_OFF);
-        filter.addAction(Intent.ACTION_SCREEN_ON);
-        registerReceiver(mScreenReceiver, filter);
-    }
-
-    private void unregisterScreenStatusReceiver() {
         try {
             if (mScreenReceiver != null) {
                 unregisterReceiver(mScreenReceiver);

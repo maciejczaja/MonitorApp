@@ -10,10 +10,10 @@ public class ScreenOnOffReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
-            Log.d("StackOverflow", "Screen Off");
+            Log.d("SCREEN", "Screen Off");
 
         } else if (intent.getAction().equals(Intent.ACTION_SCREEN_ON)) {
-            Log.d("StackOverflow", "Screen On");
+            Log.d("SCREEN", "Screen On");
         }
     }
 }
