@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">MonitorApp</string>
+    <string name="delay">delay</string>
+    <string name="foreground_app">Foreground App</string>
 </resources>

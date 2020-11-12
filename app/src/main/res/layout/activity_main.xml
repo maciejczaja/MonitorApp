@@ -122,6 +122,43 @@
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="UseSwitchCompatOrMaterialXml" />
 
+        <Switch
+            android:id="@+id/AppReadSwitch"
+            android:layout_width="250dp"
+            android:layout_height="50dp"
+            android:layout_marginTop="480dp"
+            android:text="@string/foreground_app"
+            android:textSize="17sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="UseSwitchCompatOrMaterialXml"
+            android:enabled="false"/>
+
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/AppReadDelayLayout"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginBottom="70dp"
+            android:ems="5"
+            app:layout_constraintBottom_toTopOf="@+id/btn"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.517"
+            app:layout_constraintStart_toStartOf="@+id/AppReadSwitch"
+            app:layout_constraintTop_toBottomOf="@+id/AppReadSwitch"
+            app:layout_constraintVertical_bias="1.0">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/AppReadDelayEditText"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:hint="@string/delay"
+                android:inputType="numberSigned"
+                android:maxLength="2"/>
+
+        </com.google.android.material.textfield.TextInputLayout>
+
         <Button
             android:id="@+id/btn"
             android:layout_width="wrap_content"
@@ -131,5 +168,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
