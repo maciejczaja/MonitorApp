@@ -4,13 +4,14 @@ import android.app.Service;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.IBinder;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 
 
-public class ScreenOnOffService extends Service {
+public class ScreenOnOff extends Service {
 
-    private ScreenOnOffReceiver mScreenReceiver;
+    private BroadcastReceiverClass mScreenReceiver;
 
     @Nullable
     @Override
@@ -20,7 +21,7 @@ public class ScreenOnOffService extends Service {
 
     @Override
     public void onCreate() {
-        mScreenReceiver = new ScreenOnOffReceiver();
+        mScreenReceiver = new BroadcastReceiverClass();
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_SCREEN_ON);
         filter.addAction(Intent.ACTION_SCREEN_OFF);
@@ -34,6 +35,7 @@ public class ScreenOnOffService extends Service {
                 unregisterReceiver(mScreenReceiver);
             }
         } catch (IllegalArgumentException e) {
+            Log.e("E", "Exception");
         }
     }
 }

@@ -122,11 +122,47 @@
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="UseSwitchCompatOrMaterialXml" />
 
+        <Switch
+            android:id="@+id/Battery"
+            android:layout_width="250dp"
+            android:layout_height="50dp"
+            android:layout_marginTop="480dp"
+            android:text="Battery level"
+            android:textSize="17dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="UseSwitchCompatOrMaterialXml" />
+
+        <Switch
+            android:id="@+id/AirplaneMode"
+            android:layout_width="250dp"
+            android:layout_height="50dp"
+            android:layout_marginTop="530dp"
+            android:text="Airplane mode"
+            android:textSize="17dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="UseSwitchCompatOrMaterialXml" />
+
+        <Switch
+            android:id="@+id/Network"
+            android:layout_width="250dp"
+            android:layout_height="50dp"
+            android:layout_marginTop="580dp"
+            android:text="Network"
+            android:textSize="17dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="UseSwitchCompatOrMaterialXml" />
+
         <Button
             android:id="@+id/btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="600dp"
+            android:layout_marginTop="630dp"
             android:text="Start"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

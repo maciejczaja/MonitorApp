@@ -1,6 +1,7 @@
 package com.monitorapp;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -27,11 +28,14 @@ public class MainActivity extends AppCompatActivity {
     private static final int PERMISSION_ALL = 1;
     private Button btn;
     private boolean btnRunStatus = false;
+    private static Context mContext;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+        mContext = this;
         setContentView(R.layout.activity_main);
         btn = findViewById(R.id.btn);
 
@@ -39,7 +43,8 @@ public class MainActivity extends AppCompatActivity {
                 Manifest.permission.RECORD_AUDIO,
                 Manifest.permission.READ_PHONE_STATE,
                 Manifest.permission.RECEIVE_SMS,
-                Manifest.permission.SEND_SMS
+                Manifest.permission.SEND_SMS,
+                Manifest.permission.READ_CALL_LOG
         };
 
         if (!checkPermissions(PERMISSIONS)) {
@@ -58,9 +63,6 @@ public class MainActivity extends AppCompatActivity {
                     action(STATE_STOP);
             }
         });
-
-        Intent intent = new Intent(this, ScreenOnOffService.class);
-        startService(intent);
     }
 
     private boolean checkPermissions(String[] perms) {
@@ -176,12 +178,12 @@ public class MainActivity extends AppCompatActivity {
         switchTemp = (Switch) findViewById(R.id.ScreenOnOff);
         if (state == STATE_START) {
             if (switchTemp.isChecked())
-                startService(new Intent(getApplicationContext(), ScreenOnOffService.class));
+                startService(new Intent(getApplicationContext(), ScreenOnOff.class));
             switchTemp.setClickable(false);
 
         } else if (state == STATE_STOP) {
             if (switchTemp.isChecked())
-                stopService(new Intent(getApplicationContext(), ScreenOnOffService.class));
+                stopService(new Intent(getApplicationContext(), ScreenOnOff.class));
             switchTemp.setClickable(true);
         }
 
@@ -210,13 +212,56 @@ public class MainActivity extends AppCompatActivity {
                 switchTemp.setEnabled(true);
         } else if (state == STATE_START) {
             if (switchTemp.isChecked())
-                startService(new Intent(getApplicationContext(), CallService.class));
+                startService(new Intent(getApplicationContext(), Call.class));
             switchTemp.setClickable(false);
 
         } else if (state == STATE_STOP) {
             if (switchTemp.isChecked())
-                stopService(new Intent(getApplicationContext(), CallService.class));
+                stopService(new Intent(getApplicationContext(), Call.class));
             switchTemp.setClickable(true);
         }
+
+        switchTemp = findViewById(R.id.Battery);
+
+        if (state == STATE_START) {
+            if (switchTemp.isChecked())
+                startService(new Intent(getApplicationContext(), Battery.class));
+            switchTemp.setClickable(false);
+
+        } else if (state == STATE_STOP) {
+            if (switchTemp.isChecked())
+                stopService(new Intent(getApplicationContext(), Battery.class));
+            switchTemp.setClickable(true);
+        }
+
+        switchTemp = findViewById(R.id.AirplaneMode);
+
+        if (state == STATE_START) {
+            if (switchTemp.isChecked())
+                startService(new Intent(getApplicationContext(), AirplaneMode.class));
+            switchTemp.setClickable(false);
+
+        } else if (state == STATE_STOP) {
+            if (switchTemp.isChecked())
+                stopService(new Intent(getApplicationContext(), AirplaneMode.class));
+            switchTemp.setClickable(true);
+        }
+
+        switchTemp = findViewById(R.id.Network);
+
+        if (state == STATE_START) {
+            if (switchTemp.isChecked())
+                startService(new Intent(getApplicationContext(), Network.class));
+            switchTemp.setClickable(false);
+
+        } else if (state == STATE_STOP) {
+            if (switchTemp.isChecked())
+                stopService(new Intent(getApplicationContext(), Network.class));
+            switchTemp.setClickable(true);
+        }
+    }
+
+    public static Context getContext() {
+        return mContext;
     }
 }

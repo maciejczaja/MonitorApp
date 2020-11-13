@@ -3,14 +3,16 @@ package com.monitorapp;
 import android.app.Service;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.ConnectivityManager;
 import android.os.IBinder;
-import android.telephony.TelephonyManager;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 
-public class CallService extends Service {
 
-    private CallReceiver mCallReceiver;
+public class Network extends Service {
+
+    private BroadcastReceiverClass mNetworkReceiver;
 
     @Nullable
     @Override
@@ -20,19 +22,21 @@ public class CallService extends Service {
 
     @Override
     public void onCreate() {
-        mCallReceiver = new CallReceiver();
+        mNetworkReceiver = new BroadcastReceiverClass();
         IntentFilter filter = new IntentFilter();
-        filter.addAction(TelephonyManager.ACTION_PHONE_STATE_CHANGED);
-        registerReceiver(mCallReceiver, filter);
+        filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+
+        registerReceiver(mNetworkReceiver, filter);
     }
 
     @Override
     public void onDestroy() {
         try {
-            if (mCallReceiver != null) {
-                unregisterReceiver(mCallReceiver);
+            if (mNetworkReceiver != null) {
+                unregisterReceiver(mNetworkReceiver);
             }
         } catch (IllegalArgumentException e) {
+            Log.e("Error", "Exception");
         }
     }
 }

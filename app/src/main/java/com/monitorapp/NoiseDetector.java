@@ -12,7 +12,7 @@ public class NoiseDetector extends Service {
 
     private MediaRecorder mRecorder = null;
     public static float dbCount = 40; //start value in dB
-    Thread tmic;
+    Thread tMic;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -35,15 +35,14 @@ public class NoiseDetector extends Service {
                 exception.printStackTrace();
             }
 
-            tmic = new Thread() {
+            tMic = new Thread() {
                 public void run() {
 
                     while (true) {
                         try {
                             int volume = mRecorder.getMaxAmplitude();
-                            if (volume > 0) {
+                            if (volume > 0)
                                 dbCount = 20 * (float) (Math.log10(volume));
-                            }
 
                             Log.d("MICROPHONE", String.valueOf(volume) + " " + String
                                     .valueOf(dbCount));
@@ -54,17 +53,16 @@ public class NoiseDetector extends Service {
                             break;
                         }
                     }
-
                 }
             };
-            tmic.start();
+            tMic.start();
 
         }
         return START_STICKY;
     }
 
     public void stop() {
-        tmic.interrupt();
+        tMic.interrupt();
         if (mRecorder != null) {
             mRecorder.stop();
             mRecorder.release();
