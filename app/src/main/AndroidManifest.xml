@@ -11,6 +11,8 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.READ_CALL_LOG" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <uses-permission
         android:name="android.permission.BATTERY_STATS"
@@ -34,11 +36,12 @@
         <service android:name=".AirplaneMode" />
         <service android:name=".Battery" />
         <service android:name=".Call" />
+        <service android:name=".ForegroundAppService" />
         <service android:name=".Network" />
         <service android:name=".NoiseDetector" />
         <service android:name=".ScreenOnOff" />
         <service android:name=".Sensors" />
-        <service android:name=".SmsService" />
+        <service android:name=".Sms" />
 
     </application>
 

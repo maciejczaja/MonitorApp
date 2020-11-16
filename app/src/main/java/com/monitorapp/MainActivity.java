@@ -5,9 +5,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Switch;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -30,6 +34,11 @@ public class MainActivity extends AppCompatActivity {
     private boolean btnRunStatus = false;
     private static Context mContext;
 
+    //fields used for foreground app check delay input
+    private Switch appCheckSwitch;
+    private EditText delayEditText;
+    private static final long DEFAULT_DELAY = 5;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +53,9 @@ public class MainActivity extends AppCompatActivity {
                 Manifest.permission.READ_PHONE_STATE,
                 Manifest.permission.RECEIVE_SMS,
                 Manifest.permission.SEND_SMS,
-                Manifest.permission.READ_CALL_LOG
+                Manifest.permission.READ_CALL_LOG,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.READ_EXTERNAL_STORAGE
         };
 
         if (!checkPermissions(PERMISSIONS)) {
@@ -65,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private boolean checkPermissions(String[] perms) {
+    private boolean checkPermissions(@NonNull String[] perms) {
 
         for (String permission : perms) {
             if (ActivityCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
@@ -195,12 +206,12 @@ public class MainActivity extends AppCompatActivity {
                 switchTemp.setEnabled(true);
         } else if (state == STATE_START) {
             if (switchTemp.isChecked())
-                startService(new Intent(getApplicationContext(), SmsService.class));
+                startService(new Intent(getApplicationContext(), Sms.class));
             switchTemp.setClickable(false);
 
         } else if (state == STATE_STOP) {
             if (switchTemp.isChecked())
-                stopService(new Intent(getApplicationContext(), SmsService.class));
+                stopService(new Intent(getApplicationContext(), Sms.class));
             switchTemp.setClickable(true);
         }
 
@@ -259,9 +270,54 @@ public class MainActivity extends AppCompatActivity {
                 stopService(new Intent(getApplicationContext(), Network.class));
             switchTemp.setClickable(true);
         }
+
+        /* read delay from text field and run app checking service */
+        delayEditText = (EditText) findViewById(R.id.AppReadDelayEditText);
+        String delayString = delayEditText.getText().toString();
+        appCheckSwitch = findViewById(R.id.AppReadSwitch);
+        delayEditText.addTextChangedListener(delayInputTextWatcher);
+
+        if (state == STATE_START) {
+            if (appCheckSwitch.isChecked()) {
+                long delay;
+                if (delayString.isEmpty()) {
+                    Toast.makeText(this, "You haven't specified the delay - app check started with default value of 5 seconds.", Toast.LENGTH_LONG).show();
+                    startService(new Intent(getApplicationContext(), ForegroundAppService.class));
+                } else {
+                    delay = Long.parseLong(delayString);
+                    startService(new Intent(getApplicationContext(), ForegroundAppService.class).putExtra("DELAY", delay));
+                }
+            }
+            appCheckSwitch.setClickable(false);
+        } else if (state == STATE_STOP) {
+            if (appCheckSwitch.isChecked())
+                stopService(new Intent(getApplicationContext(), ForegroundAppService.class));
+            appCheckSwitch.setClickable(true);
+        }
     }
 
-    public static Context getContext() {
-        return mContext;
-    }
+    private TextWatcher delayInputTextWatcher = new TextWatcher() {
+
+        @Override
+        public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            String delayInput = delayEditText.getText().toString().trim();
+            if (delayInput.isEmpty()) {
+                appCheckSwitch.setChecked(false);
+            }
+        }
+
+        @Override
+        public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            String delayInput = delayEditText.getText().toString().trim();
+            appCheckSwitch.setEnabled(!delayInput.isEmpty());
+        }
+
+        @Override
+        public void afterTextChanged(Editable editable) {
+            String delayInput = delayEditText.getText().toString().trim();
+            if (delayInput.isEmpty()) {
+                appCheckSwitch.setChecked(false);
+            }
+        }
+    };
 }

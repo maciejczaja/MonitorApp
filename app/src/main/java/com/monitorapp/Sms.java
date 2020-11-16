@@ -44,7 +44,6 @@ public class Sms extends Service {
 class SmsReceiver extends BroadcastReceiver {
 
     private static final String TAG = SmsReceiver.class.getSimpleName();
-    public static final String SMS_CONTENT = "sms_content";
 
     @Override
     public void onReceive(Context context, Intent intent) {
