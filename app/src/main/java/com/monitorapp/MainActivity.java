@@ -12,6 +12,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
+import java.io.IOException;
+
 public class MainActivity extends AppCompatActivity {
 
     private static final int STATE_START = 1;
@@ -27,6 +29,8 @@ public class MainActivity extends AppCompatActivity {
     private static final int PERMISSION_ALL = 1;
     private Button btn;
     private boolean btnRunStatus = false;
+
+    DatabaseHelper dbHelper = new DatabaseHelper(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +62,20 @@ public class MainActivity extends AppCompatActivity {
                     action(STATE_STOP);
             }
         });
+
+        //add motion sensors - in database helper maybe?
+        dbHelper.addRecordMotionSensors("Accelerometer");
+        dbHelper.addRecordMotionSensors("Magnetometer");
+        dbHelper.addRecordMotionSensors("Gyroscope");
+        dbHelper.addRecordMotionSensors("Light");
+        dbHelper.addRecordMotionSensors("Gravity");
+
+        //call state
+        //dbHelper.addRecordCallState("");
+
+        //event types
+        //dbHelper.addRecordEventTypes("");
+        dbHelper.addRecordMotionSensorReadings(Long.valueOf(1), "", Float.valueOf(1), Float.valueOf(2), Float.valueOf(3), "Gyroscope");
 
         Intent intent = new Intent(this, ScreenOnOffService.class);
         startService(intent);
@@ -92,6 +110,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void action(int state) {
+
+        SQLExporter exporter = new SQLExporter();
 
         if (state != STATE_CHECK_PERMISSION)
             changeTextButton();
@@ -217,6 +237,14 @@ public class MainActivity extends AppCompatActivity {
             if (switchTemp.isChecked())
                 stopService(new Intent(getApplicationContext(), CallService.class));
             switchTemp.setClickable(true);
+        }
+
+        if (state == STATE_START) {
+            try {
+                exporter.export(dbHelper.getDatabase());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

@@ -8,6 +8,8 @@
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
     <uses-permission android:name="android.permission.SEND_SMS" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:node="replace"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="replace"/>
 
     <application
         android:allowBackup="true"
