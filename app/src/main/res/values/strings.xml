@@ -2,4 +2,18 @@
     <string name="app_name">MonitorApp</string>
     <string name="delay">delay</string>
     <string name="foreground_app">Foreground App</string>
+    <string name="send_to_drive">Send to drive</string>
+    <string name="start">Start</string>
+    <string name="network">Network</string>
+    <string name="airplane_mode">Airplane mode</string>
+    <string name="battery_level">Battery level</string>
+    <string name="call">Call</string>
+    <string name="sms">Sms</string>
+    <string name="screen_on_off">Screen On/Off</string>
+    <string name="magnetic_field">Magnetic field</string>
+    <string name="light">Light</string>
+    <string name="gravity">Gravity</string>
+    <string name="accelerometer">Accelerometr</string>
+    <string name="gyroscope">Gyroscope</string>
+    <string name="sound_level_meter">Sound level meter</string>
 </resources>

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".view.MainActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/relativeLayout"
@@ -12,163 +12,207 @@
         android:layout_height="wrap_content"
         android:fillViewport="true">
 
-        <Switch
+        <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/Sound_level_meter"
             android:layout_width="250dp"
             android:layout_height="50dp"
             android:layout_marginTop="30dp"
             android:layout_marginBottom="360dp"
             android:switchTextAppearance="@style/TextAppearance.AppCompat.Large"
-            android:text="Sound level meter"
-            android:textSize="17dp"
+            android:text="@string/sound_level_meter"
+            android:textSize="17sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="UseSwitchCompatOrMaterialXml" />
 
-        <Switch
+        <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/Gyroscope"
             android:layout_width="250dp"
             android:layout_height="50dp"
             android:layout_marginTop="80dp"
-            android:text="Gyroscope"
-            android:textSize="17dp"
+            android:text="@string/gyroscope"
+            android:textSize="17sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="UseSwitchCompatOrMaterialXml" />
 
-        <Switch
-            android:id="@+id/Accelerometr"
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/Accelerometer"
             android:layout_width="250dp"
             android:layout_height="50dp"
             android:layout_marginTop="130dp"
-            android:text="Accelerometr"
-            android:textSize="17dp"
+            android:text="@string/accelerometer"
+            android:textSize="17sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="UseSwitchCompatOrMaterialXml" />
 
-        <Switch
+        <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/Gravity"
             android:layout_width="250dp"
             android:layout_height="50dp"
             android:layout_marginTop="180dp"
-            android:text="Gravity"
-            android:textSize="17dp"
+            android:text="@string/gravity"
+            android:textSize="17sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="UseSwitchCompatOrMaterialXml" />
 
-        <Switch
+        <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/Light"
             android:layout_width="250dp"
             android:layout_height="50dp"
             android:layout_marginTop="230dp"
-            android:text="Light"
-            android:textSize="17dp"
+            android:text="@string/light"
+            android:textSize="17sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="UseSwitchCompatOrMaterialXml" />
 
-        <Switch
+        <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/Magnetic_field"
             android:layout_width="250dp"
             android:layout_height="50dp"
             android:layout_marginTop="280dp"
-            android:text="Magnetic field"
-            android:textSize="17dp"
+            android:text="@string/magnetic_field"
+            android:textSize="17sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="UseSwitchCompatOrMaterialXml" />
 
-        <Switch
-            android:id="@+id/ScreenOnOff"
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/Screen_On_Off"
             android:layout_width="250dp"
             android:layout_height="50dp"
             android:layout_marginTop="330dp"
-            android:text="Screen On/Off"
-            android:textSize="17dp"
+            android:text="@string/screen_on_off"
+            android:textSize="17sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="UseSwitchCompatOrMaterialXml" />
 
-        <Switch
+        <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/Sms"
             android:layout_width="250dp"
             android:layout_height="50dp"
             android:layout_marginTop="380dp"
-            android:text="Sms"
-            android:textSize="17dp"
+            android:text="@string/sms"
+            android:textSize="17sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="UseSwitchCompatOrMaterialXml" />
 
-        <Switch
+        <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/Call"
             android:layout_width="250dp"
             android:layout_height="50dp"
             android:layout_marginTop="430dp"
-            android:text="Call"
-            android:textSize="17dp"
+            android:text="@string/call"
+            android:textSize="17sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="UseSwitchCompatOrMaterialXml" />
 
-        <Switch
-            android:id="@+id/AppReadSwitch"
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/Battery"
             android:layout_width="250dp"
             android:layout_height="50dp"
             android:layout_marginTop="480dp"
+            android:text="@string/battery_level"
+            android:textSize="17sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="UseSwitchCompatOrMaterialXml" />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/Airplane_mode"
+            android:layout_width="250dp"
+            android:layout_height="50dp"
+            android:layout_marginTop="530dp"
+            android:text="@string/airplane_mode"
+            android:textSize="17sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="UseSwitchCompatOrMaterialXml" />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/Network"
+            android:layout_width="250dp"
+            android:layout_height="50dp"
+            android:layout_marginTop="580dp"
+            android:text="@string/network"
+            android:textSize="17sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="UseSwitchCompatOrMaterialXml" />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/Foreground_app"
+            android:layout_width="250dp"
+            android:layout_height="50dp"
+            android:layout_marginTop="630dp"
             android:text="@string/foreground_app"
             android:textSize="17sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:ignore="UseSwitchCompatOrMaterialXml"
-            android:enabled="false"/>
-
+            tools:ignore="UseSwitchCompatOrMaterialXml" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/AppReadDelayLayout"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:layout_marginBottom="70dp"
             android:ems="5"
-            app:layout_constraintBottom_toTopOf="@+id/btn"
+            app:layout_constraintBottom_toTopOf="@+id/Button_start_stop"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.517"
-            app:layout_constraintStart_toStartOf="@+id/AppReadSwitch"
-            app:layout_constraintTop_toBottomOf="@+id/AppReadSwitch"
+            app:layout_constraintStart_toStartOf="@+id/Foreground_app"
+            app:layout_constraintTop_toBottomOf="@+id/Foreground_app"
             app:layout_constraintVertical_bias="1.0">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/AppReadDelayEditText"
+                android:id="@+id/Foreground_app_delay"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:hint="@string/delay"
                 android:inputType="numberSigned"
-                android:maxLength="2"/>
+                android:maxLength="2" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
         <Button
-            android:id="@+id/btn"
+            android:id="@+id/Button_start_stop"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="600dp"
-            android:text="Start"
+            android:layout_marginTop="684dp"
+            android:text="@string/start"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.3"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <Button
+            android:id="@+id/Button_send"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="684dp"
+            android:text="@string/send_to_drive"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.7"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

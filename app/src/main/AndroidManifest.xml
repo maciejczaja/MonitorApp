@@ -8,8 +8,18 @@
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
     <uses-permission android:name="android.permission.SEND_SMS" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.READ_CALL_LOG" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
+
+    <uses-permission
+        android:name="android.permission.BATTERY_STATS"
+        tools:ignore="ProtectedPermissions" />
 
     <application
         android:allowBackup="true"
@@ -18,20 +28,27 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <activity
+            android:name=".view.MainActivity"
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".view.ZipActivity"
+            android:parentActivityName=".view.ZipActivity" />
 
-        <service android:name=".Sensors" />
-        <service android:name=".NoiseDetector" />
-        <service android:name=".ScreenOnOffService" />
-        <service android:name=".SmsService" />
-        <service android:name=".CallService" />
-        <service android:name=".ForegroundAppService" />
+        <service android:name=".services.AirplaneModeService" />
+        <service android:name=".services.BatteryService" />
+        <service android:name=".services.CallService" />
+        <service android:name=".services.ForegroundAppService" />
+        <service android:name=".services.NetworkService" />
+        <service android:name=".services.NoiseDetectorService" />
+        <service android:name=".services.ScreenOnOffService" />
+        <service android:name=".services.SensorsService" />
+        <service android:name=".services.SmsService" />
 
     </application>
 
