@@ -9,7 +9,6 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -115,6 +114,17 @@ class DatabaseHelper extends SQLiteOpenHelper {
             db.execSQL(queries[i]);
         }
 
+        addRecordMotionSensors("Accelerometer", db);
+        addRecordMotionSensors("Magnetometer", db);
+        addRecordMotionSensors("Gyroscope", db);
+        addRecordMotionSensors("Light", db);
+        addRecordMotionSensors("Gravity", db);
+
+        addRecordCallState("Incoming Picked up", db);
+        addRecordCallState("Incoming Rejected", db);
+        addRecordCallState("Incoming Missed", db);
+        addRecordCallState("Outgoing", db);
+
     }
 
     @Override
@@ -130,29 +140,35 @@ class DatabaseHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    void addRecordMotionSensors(String name) {
-        SQLiteDatabase db = this.getWritableDatabase();
+    void addRecordMotionSensors(String name, SQLiteDatabase db) {
         ContentValues cv = new ContentValues();
 
         cv.put(COLUMN_NAME, name);
-        long result = db.insert(TABLE_MOTION_SENSORS, null, cv);
-        if (result == -1) {
-            Toast.makeText(context, "Adding to database failed", Toast.LENGTH_SHORT).show();
-        }
-        else {
-            Toast.makeText(context, "Successfully added to database", Toast.LENGTH_SHORT).show();
-        }
+        db.insert(TABLE_MOTION_SENSORS, null, cv);
 
     }
 
-    void addRecordMotionSensorReadings(Long user_id, String datetime,
+    void addRecordMotionSensorReadings(String user_id, String datetime,
                                        Float x_axis, Float y_axis, Float z_axis,
                                        String sensorName) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues cv = new ContentValues();
+        ContentValues cvData = new ContentValues();
+        ContentValues cvSensor = new ContentValues();
+        String newName = "";
         int fkIdSensor = 0;
 
-        String[] params = new String[]{ sensorName };
+        if (sensorName.contains("Accelerometer"))
+            newName = "Accelerometer";
+        else if (sensorName.contains("Gyroscope"))
+            newName = "Gyroscope";
+        else if (sensorName.contains("Gravity"))
+            newName = "Gravity";
+        else if (sensorName.contains("Magnetometer"))
+            newName = "Magnetometer";
+        else if (sensorName.contains("alsprx"))
+            newName = "Light";
+
+        String[] params = new String[]{ newName };
         String[] columns = new String[] {COLUMN_ID};
         Cursor c = db.query(TABLE_MOTION_SENSORS, columns,
                 COLUMN_NAME + " = ?", params,
@@ -162,19 +178,26 @@ class DatabaseHelper extends SQLiteOpenHelper {
             fkIdSensor = c.getInt(0);
         }
 
-        cv.put(COLUMN_X, x_axis);
-        cv.put(COLUMN_Y, y_axis);
-        cv.put(COLUMN_Z, z_axis);
-        cv.put(COLUMN_FK_MSR, fkIdSensor);
+        cvSensor.put(COLUMN_X, x_axis);
+        cvSensor.put(COLUMN_Y, y_axis);
+        cvSensor.put(COLUMN_Z, z_axis);
+        cvSensor.put(COLUMN_FK_MSR, fkIdSensor);
 
-        long result = db.insert(TABLE_MOTION_SENSOR_READINGS, null, cv);
-        if (result == -1) {
-            Toast.makeText(context, "Adding to database failed", Toast.LENGTH_SHORT).show();
-        }
-        else {
-            Toast.makeText(context, "Successfully added to database", Toast.LENGTH_SHORT).show();
-        }
+        cvData.put(COLUMN_DATETIME, datetime);
+        cvData.put(COLUMN_USER_ID, user_id);
 
+        db.beginTransactionNonExclusive();
+
+        try {
+
+            db.insert(TABLE_DATA, null, cvData);
+            db.insert(TABLE_MOTION_SENSOR_READINGS, null, cvSensor);
+
+            db.setTransactionSuccessful();
+        }
+        finally {
+            db.endTransaction();
+        }
     }
 
     void addRecordData(String datetime, Long user_id) {
@@ -194,24 +217,43 @@ class DatabaseHelper extends SQLiteOpenHelper {
 
     }
 
-    void addRecordCallData(Long fk_id_call_state) {
+    void addRecordCallData(String callState, String userID, String datetime) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues cv = new ContentValues();
+        ContentValues cvCall = new ContentValues();
+        ContentValues cvData = new ContentValues();
+        Long fkIdCallState = Long.valueOf(0);
 
-        cv.put(COLUMN_FK_CD, fk_id_call_state);
+        String[] params = new String[]{ callState };
+        String[] columns = new String[] {COLUMN_ID};
+        Cursor c = db.query(TABLE_CALL_STATES, columns,
+                COLUMN_NAME + " = ?", params,
+                null, null, null);
 
-        long result = db.insert(TABLE_CALL_DATA, null, cv);
-        if (result == -1) {
-            Toast.makeText(context, "Adding to database failed", Toast.LENGTH_SHORT).show();
+        if (c.moveToNext()) {
+            fkIdCallState = c.getLong(0);
         }
-        else {
-            Toast.makeText(context, "Successfully added to database", Toast.LENGTH_SHORT).show();
+
+        cvData.put(COLUMN_USER_ID, userID);
+        cvData.put(COLUMN_DATETIME, datetime);
+
+        cvCall.put(COLUMN_FK_CD, fkIdCallState);
+
+        db.beginTransactionNonExclusive();
+
+        try {
+
+            db.insert(TABLE_DATA, null, cvData);
+            db.insert(TABLE_CALL_DATA, null, cvCall);
+
+            db.setTransactionSuccessful();
+        }
+        finally {
+            db.endTransaction();
         }
 
     }
 
-    void addRecordCallState(String name) {
-        SQLiteDatabase db = this.getWritableDatabase();
+    void addRecordCallState(String name, SQLiteDatabase db) {
         ContentValues cv = new ContentValues();
 
         cv.put(COLUMN_NAME, name);

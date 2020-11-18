@@ -43,7 +43,9 @@ public class MainActivity extends AppCompatActivity {
                 Manifest.permission.RECORD_AUDIO,
                 Manifest.permission.READ_PHONE_STATE,
                 Manifest.permission.RECEIVE_SMS,
-                Manifest.permission.SEND_SMS
+                Manifest.permission.SEND_SMS,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.READ_EXTERNAL_STORAGE
         };
 
         if (!checkPermissions(PERMISSIONS)) {
@@ -64,18 +66,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
         //add motion sensors - in database helper maybe?
-        dbHelper.addRecordMotionSensors("Accelerometer");
-        dbHelper.addRecordMotionSensors("Magnetometer");
-        dbHelper.addRecordMotionSensors("Gyroscope");
-        dbHelper.addRecordMotionSensors("Light");
-        dbHelper.addRecordMotionSensors("Gravity");
 
         //call state
-        //dbHelper.addRecordCallState("");
-
-        //event types
-        //dbHelper.addRecordEventTypes("");
-        dbHelper.addRecordMotionSensorReadings(Long.valueOf(1), "", Float.valueOf(1), Float.valueOf(2), Float.valueOf(3), "Gyroscope");
 
         Intent intent = new Intent(this, ScreenOnOffService.class);
         startService(intent);
@@ -239,7 +231,7 @@ public class MainActivity extends AppCompatActivity {
             switchTemp.setClickable(true);
         }
 
-        if (state == STATE_START) {
+        if (state == STATE_STOP) {
             try {
                 exporter.export(dbHelper.getDatabase());
             } catch (IOException e) {

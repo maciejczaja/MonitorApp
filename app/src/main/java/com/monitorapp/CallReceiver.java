@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 
@@ -57,7 +58,11 @@ public class CallReceiver extends BroadcastReceiver {
     }
 
     protected void onMissedCall(Context ctx, String number, Date start) {
+        DatabaseHelper dbHelper = new DatabaseHelper(ctx.getApplicationContext());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
+        java.sql.Date date = new java.sql.Date(System.currentTimeMillis());
         Log.d("5", ctx.toString() + number + start);
+        dbHelper.addRecordCallData("Incoming Missed", UserIDStore.id(ctx.getApplicationContext()), sdf.format(date));
     }
 
     //Deals with actual events
