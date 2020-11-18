@@ -9,6 +9,11 @@ import android.hardware.SensorManager;
 import android.os.IBinder;
 import android.util.Log;
 
+import com.monitorapp.DatabaseHelper;
+import com.monitorapp.UserIDStore;
+
+import java.sql.Date;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 public class SensorsService extends Service {
@@ -27,15 +32,25 @@ public class SensorsService extends Service {
 
         public void onSensorChanged(SensorEvent event) {
             float[] values = event.values;
+            DatabaseHelper dbHelper = new DatabaseHelper(getApplicationContext());
 
-            if (values.length == 1)
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
+            Date date = new Date(System.currentTimeMillis());
+
+            if (values.length == 1) {
                 Log.d(String.valueOf(event.sensor.getName()), "x: " + values[0]);
+                dbHelper.addRecordMotionSensorReadings(UserIDStore.id(getApplicationContext()), sdf.format(date), values[0], null, null, event.sensor.getName());
+            }
 
-            if (values.length == 2)
+            if (values.length == 2) {
                 Log.d(String.valueOf(event.sensor.getName()), "x: " + values[0] + ", y: ");
+                dbHelper.addRecordMotionSensorReadings(UserIDStore.id(getApplicationContext()), sdf.format(date), values[0], values[1], null, event.sensor.getName());
+            }
 
-            if (values.length == 3)
+            if (values.length == 3) {
                 Log.d(String.valueOf(event.sensor.getName()), "x: " + values[0] + ", y: " + values[1] + ", z: " + values[2]);
+                dbHelper.addRecordMotionSensorReadings(UserIDStore.id(getApplicationContext()), sdf.format(date), values[0], values[1], values[2], event.sensor.getName());
+            }
         }
     };
 

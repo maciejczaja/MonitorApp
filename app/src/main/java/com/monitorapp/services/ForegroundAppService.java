@@ -11,9 +11,13 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+import com.monitorapp.DatabaseHelper;
+import com.monitorapp.UserIDStore;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Field;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -22,6 +26,7 @@ public class ForegroundAppService extends Service {
 
     private static final String TAG = "ForegroundAppService";
     private long delay;
+    DatabaseHelper dbHelper;
 
     private Thread foregroundAppServiceThread = new Thread(() -> {
         while (true) {
@@ -29,7 +34,10 @@ public class ForegroundAppService extends Service {
 //                final String foregroundProcessName = getForegroundProcessName();
                 final String foregroundProcessName = getForegroundProcessNameNew();
                 Date currentDateTime = Calendar.getInstance().getTime();
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
+                java.sql.Date date = new java.sql.Date(System.currentTimeMillis());
                 Log.d(TAG, foregroundProcessName + " registered at " + currentDateTime.toString());
+                dbHelper.addRecordAppData(foregroundProcessName, sdf.format(date), UserIDStore.id(getApplicationContext()));
                 Thread.sleep(delay);
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -51,6 +59,7 @@ public class ForegroundAppService extends Service {
     public void onCreate() {
         /* TODO: idk? */
         super.onCreate();
+        dbHelper = new DatabaseHelper(getApplicationContext());
     }
 
     @Override

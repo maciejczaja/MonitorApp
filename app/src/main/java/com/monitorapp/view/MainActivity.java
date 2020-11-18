@@ -18,7 +18,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.app.ActivityCompat;
 
+import com.monitorapp.DatabaseHelper;
 import com.monitorapp.R;
+import com.monitorapp.SQLExporter;
 import com.monitorapp.services.AirplaneModeService;
 import com.monitorapp.enums.AppRunState;
 import com.monitorapp.services.BatteryService;
@@ -29,6 +31,8 @@ import com.monitorapp.services.NoiseDetectorService;
 import com.monitorapp.services.ScreenOnOffService;
 import com.monitorapp.services.SensorsService;
 import com.monitorapp.services.SmsService;
+
+import java.io.IOException;
 
 import static com.monitorapp.enums.AppRunState.STATE_CHECK_PERMISSION;
 import static com.monitorapp.enums.AppRunState.STATE_START;
@@ -228,6 +232,9 @@ public class MainActivity extends AppCompatActivity {
 
     public void action(AppRunState state) {
 
+        SQLExporter exporter = new SQLExporter();
+        DatabaseHelper dbHelper = new DatabaseHelper(this);
+
         if (state != STATE_CHECK_PERMISSION)
             changeButtonText();
 
@@ -412,6 +419,14 @@ public class MainActivity extends AppCompatActivity {
             if (switchForegroundApp.isChecked())
                 stopService(new Intent(getApplicationContext(), ForegroundAppService.class));
             switchForegroundApp.setClickable(true);
+        }
+
+        if (state == STATE_STOP) {
+            try {
+                exporter.export(dbHelper.getWritableDatabase());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

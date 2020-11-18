@@ -13,6 +13,9 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+import com.monitorapp.DatabaseHelper;
+import com.monitorapp.UserIDStore;
+
 public class CallService extends Service {
 
     private CallReceiver mCallCallReceiver;
@@ -56,6 +59,7 @@ class CallReceiver extends BroadcastReceiver {
     private void getCallLog(Context context) {
         Cursor cursor = context.getApplicationContext().getContentResolver().query(CallLog.Calls.CONTENT_URI, null, null,
                 null, CallLog.Calls.DATE + " DESC");
+        DatabaseHelper dbHelper = new DatabaseHelper(context.getApplicationContext());
         if (cursor.getCount() > 0) {
             try {
                 cursor.moveToFirst();
@@ -64,6 +68,7 @@ class CallReceiver extends BroadcastReceiver {
                 Log.d("DATE", date);
                 Log.d("TYPE", cursor.getString(cursor.getColumnIndex(CallLog.Calls.TYPE)));
                 Log.d("DURATION", cursor.getString(cursor.getColumnIndex(CallLog.Calls.DURATION)));
+                //dbHelper.addRecordCallData(cursor.getColumnIndex(CallLog.Calls.TYPE), UserIDStore.id(context.getApplicationContext()), date, cursor.getColumnIndex(CallLog.Calls.DURATION));
             } catch (Exception e) {
                 Log.e("Exception", e.toString());
             }
