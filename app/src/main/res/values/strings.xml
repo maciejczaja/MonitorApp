@@ -13,7 +13,7 @@
     <string name="magnetic_field">Magnetic field</string>
     <string name="light">Light</string>
     <string name="gravity">Gravity</string>
-    <string name="accelerometer">Accelerometr</string>
+    <string name="accelerometer">Accelerometer</string>
     <string name="gyroscope">Gyroscope</string>
     <string name="sound_level_meter">Sound level meter</string>
 </resources>
