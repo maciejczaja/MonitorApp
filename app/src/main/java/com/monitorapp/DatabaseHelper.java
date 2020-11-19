@@ -67,6 +67,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     //Network data columns
     private static final String COLUMN_NETWORK_INFO = "network_info";
 
+    //On off data columns
+    private static final String COLUMN_FK_ID_TYPE = "fk_id_type";
+
     public DatabaseHelper(@Nullable Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
         this.context = context;
@@ -143,8 +146,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         queries[9] =
                 "CREATE TABLE " + TABLE_ON_OFF_DATA + " (" +
-                        COLUMN_ID + " INTEGER PRIMARY KEY NOT NULL REFERENCES DATA," +
-                        COLUMN_FK_ID_STATE + " INT NOT NULL REFERENCES " + TABLE_STATES_ON_OFF +
+                        COLUMN_ID + " INTEGER PRIMARY KEY NOT NULL REFERENCES DATA, " +
+                        COLUMN_FK_ID_STATE + " INT NOT NULL REFERENCES " + TABLE_STATES_ON_OFF + ", " +
+                        COLUMN_FK_ID_TYPE + " INT NOT NULL REFERENCES " + TABLE_TYPES_ON_OFF +
                         ");";
 
         queries[10] =
@@ -179,6 +183,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         addRecordCallState("Incoming Rejected", db);
         addRecordCallState("Incoming Missed", db);
         addRecordCallState("Outgoing", db);
+
+        addRecordStatesOnOff("On", db);
+        addRecordStatesOnOff("Off", db);
+
+        addRecordTypesOnOff("Airplane mode", db);
+        addRecordTypesOnOff("Screen", db);
+        addRecordTypesOnOff("Power", db);
 
     }
 
@@ -276,12 +287,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     }
 
-    public void addRecordCallData(String callState, String userID, String datetime, int duration) {
+    public void addRecordCallData(int callStateInt, String userID, String datetime, int duration) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cvCall = new ContentValues();
         ContentValues cvData = new ContentValues();
         Long fkIdCallState = Long.valueOf(0);
         Long lastID = Long.valueOf(0);
+        String callState = "";
+
+        if (callStateInt == 1) {
+            callState = "Incoming Picked up";
+        } else if (callStateInt == 3) {
+            callState = "Incoming Missed";
+        } else if (callStateInt == 5) {
+            callState = "Incoming Rejected";
+        } else {
+            callState = "Outgoing";
+        }
 
         String[] params = new String[]{ callState };
         String[] columns = new String[] {COLUMN_ID};
@@ -378,6 +400,124 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             lastID = db.insert(TABLE_DATA, null, cvData);
             cvNoiseDetector.put(COLUMN_ID, lastID);
             db.insert(TABLE_NOISE_DETECTOR_DATA, null, cvNoiseDetector);
+
+            db.setTransactionSuccessful();
+        }
+        finally {
+            db.endTransaction();
+        }
+    }
+
+    public void addRecordTypesOnOff(String name, SQLiteDatabase db) {
+        ContentValues cv = new ContentValues();
+
+        cv.put(COLUMN_NAME, name);
+
+        db.insert(TABLE_TYPES_ON_OFF, null, cv);
+    }
+
+    public void addRecordStatesOnOff(String name, SQLiteDatabase db) {
+        ContentValues cv = new ContentValues();
+
+        cv.put(COLUMN_NAME, name);
+
+        db.insert(TABLE_STATES_ON_OFF, null, cv);
+    }
+
+    public void addRecordBatteryData(String datetime, String userID, float batteryLevel) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cvBattery = new ContentValues();
+        ContentValues cvData = new ContentValues();
+        Long lastID = Long.valueOf(0);
+
+        cvData.put(COLUMN_DATETIME, datetime);
+        cvData.put(COLUMN_USER_ID, userID);
+
+        cvBattery.put(COLUMN_BATTERY_LEVEL, batteryLevel);
+
+        db.beginTransaction();
+
+        try {
+
+            lastID = db.insert(TABLE_DATA, null, cvData);
+            cvBattery.put(COLUMN_ID, lastID);
+            db.insert(TABLE_BATTERY_DATA, null, cvBattery);
+
+            db.setTransactionSuccessful();
+        }
+        finally {
+            db.endTransaction();
+        }
+    }
+
+    public void addRecordOnOffData(String type, String state, String userID, String datetime) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cvCall = new ContentValues();
+        ContentValues cvData = new ContentValues();
+        Long fkIdOnOffState = Long.valueOf(0);
+        Long fkIdOnOffType = Long.valueOf(0);
+        Long lastID = Long.valueOf(0);
+
+        String[] params = new String[]{ type };
+        String[] columns = new String[] {COLUMN_ID};
+        Cursor c = db.query(TABLE_TYPES_ON_OFF, columns,
+                COLUMN_NAME + " = ?", params,
+                null, null, null);
+
+        if (c.moveToNext()) {
+            fkIdOnOffType = c.getLong(0);
+        }
+
+        String[] params2 = new String[]{ state };
+        String[] columns2 = new String[] {COLUMN_ID};
+        Cursor c2 = db.query(TABLE_STATES_ON_OFF, columns2,
+                COLUMN_NAME + " = ?", params2,
+                null, null, null);
+
+        if (c2.moveToNext()) {
+            fkIdOnOffState = c2.getLong(0);
+        }
+
+        cvData.put(COLUMN_USER_ID, userID);
+        cvData.put(COLUMN_DATETIME, datetime);
+
+        cvCall.put(COLUMN_FK_ID_STATE, fkIdOnOffState);
+        cvCall.put(COLUMN_FK_ID_TYPE, fkIdOnOffType);
+
+        db.beginTransaction();
+
+        try {
+
+            lastID = db.insert(TABLE_DATA, null, cvData);
+            cvCall.put(COLUMN_ID, lastID);
+            db.insert(TABLE_ON_OFF_DATA, null, cvCall);
+
+            db.setTransactionSuccessful();
+        }
+        finally {
+            db.endTransaction();
+        }
+
+    }
+
+    public void addRecordNetworkData(String datetime, String userID, String info) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cvNetwork = new ContentValues();
+        ContentValues cvData = new ContentValues();
+        Long lastID = Long.valueOf(0);
+
+        cvData.put(COLUMN_DATETIME, datetime);
+        cvData.put(COLUMN_USER_ID, userID);
+
+        cvNetwork.put(COLUMN_NETWORK_INFO, info);
+
+        db.beginTransaction();
+
+        try {
+
+            lastID = db.insert(TABLE_DATA, null, cvData);
+            cvNetwork.put(COLUMN_ID, lastID);
+            db.insert(TABLE_NETWORK_DATA, null, cvNetwork);
 
             db.setTransactionSuccessful();
         }

@@ -68,7 +68,7 @@ class CallReceiver extends BroadcastReceiver {
                 Log.d("DATE", date);
                 Log.d("TYPE", cursor.getString(cursor.getColumnIndex(CallLog.Calls.TYPE)));
                 Log.d("DURATION", cursor.getString(cursor.getColumnIndex(CallLog.Calls.DURATION)));
-                //dbHelper.addRecordCallData(cursor.getColumnIndex(CallLog.Calls.TYPE), UserIDStore.id(context.getApplicationContext()), date, cursor.getColumnIndex(CallLog.Calls.DURATION));
+                dbHelper.addRecordCallData(cursor.getColumnIndex(CallLog.Calls.TYPE), UserIDStore.id(context.getApplicationContext()), date, cursor.getColumnIndex(CallLog.Calls.DURATION));
             } catch (Exception e) {
                 Log.e("Exception", e.toString());
             }
