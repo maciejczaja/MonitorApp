@@ -1,5 +1,6 @@
 package com.monitorapp;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
@@ -36,26 +37,12 @@ public class SQLExporter {
         return cursor;
     }
 
-    /*public static List<String> getTablesOnDataBase(SQLiteDatabase db) {
-        Cursor c = null;
-        List<String> tables = new ArrayList<String>();
-        try {
-            c = db.rawQuery("SELECT name FROM sqlite_master WHERE type='table'", null);
-            if (c.moveToFirst()) {
-                while (!c.isAfterLast()) {
-                    tables.add(c.getString(0));
-                    c.moveToNext();
-                }
-            }
-        } catch(Exception throwable) {
-            throwable.printStackTrace();
-        } finally {
-            if (c != null) {
-                c.close();
-            }
-        }
-        return tables;
-    }*/
+    public static String getExternalStorage() {
+        //if (android.os.Build.VERSION.SDK_INT < 30)
+            return Environment.getExternalStorageDirectory().toString();
+        //else
+            //return getApplicationContext().getExternalFilesDir();
+    }
 
     private static void writeSingleValue(CSVWriter writer, String value) {
         writer.writeNext(new String[]{value});

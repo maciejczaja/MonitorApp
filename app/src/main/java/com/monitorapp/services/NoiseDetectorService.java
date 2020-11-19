@@ -6,13 +6,19 @@ import android.media.MediaRecorder;
 import android.os.IBinder;
 import android.util.Log;
 
+import com.monitorapp.DatabaseHelper;
+import com.monitorapp.UserIDStore;
+
 import java.io.IOException;
+import java.sql.Date;
+import java.text.SimpleDateFormat;
 
 public class NoiseDetectorService extends Service {
 
     private MediaRecorder mRecorder = null;
     public static float dbCount = 40; //start value in dB
     Thread tMic;
+    DatabaseHelper dbHelper;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -20,6 +26,7 @@ public class NoiseDetectorService extends Service {
     }
 
     public int onStartCommand(Intent intent, int flags, int startId) {
+        dbHelper = new DatabaseHelper(getApplicationContext());
         if (mRecorder == null) {
             try {
                 mRecorder = new MediaRecorder();
@@ -44,8 +51,12 @@ public class NoiseDetectorService extends Service {
                             if (volume > 0)
                                 dbCount = 20 * (float) (Math.log10(volume));
 
+                            SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
+                            Date date = new Date(System.currentTimeMillis());
+
                             Log.d("MICROPHONE", String.valueOf(volume) + " " + String
                                     .valueOf(dbCount));
+                            dbHelper.addRecordNoiseDetectorData(sdf.format(date), UserIDStore.id(getApplicationContext()), volume, dbCount);
 
                             Thread.sleep(1000);
                         } catch (InterruptedException e) {

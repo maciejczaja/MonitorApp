@@ -18,7 +18,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "Stats.db";
     private static final int DATABASE_VERSION = 1;
 
-    private static final int NUMBER_OF_TABLES = 7;
+    private static final int NUMBER_OF_TABLES = 13;
 
     //Table names
     private static final String TABLE_MOTION_SENSORS = "Motion_sensors";
@@ -28,12 +28,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TABLE_CALL_STATES = "Call_states";
     private static final String TABLE_SMS_DATA = "Text_message_data";
     private static final String TABLE_APP_DATA = "App_data";
+    private static final String TABLE_NOISE_DETECTOR_DATA = "Noise_detector_data";
+    private static final String TABLE_BATTERY_DATA = "Battery_data";
+    private static final String TABLE_ON_OFF_DATA = "On_off_data";
+    private static final String TABLE_NETWORK_DATA = "Network_data";
+    private static final String TABLE_STATES_ON_OFF = "States_on_off";
+    private static final String TABLE_TYPES_ON_OFF = "Types_on_off";
 
     //Shared attribute names
     private static final String COLUMN_ID = "id";
     private static final String COLUMN_NAME = "name";
     private static final String COLUMN_USER_ID = "user_id";
     private static final String COLUMN_DATETIME = "datetime";
+    private static final String COLUMN_FK_ID_STATE = "fk_id_state";
 
     //Motion sensor readings columns
     private static final String COLUMN_X = "x_axis";
@@ -49,6 +56,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     //Call data columns
     private static final String COLUMN_FK_CD = "fk_call_state_id";
     private static final String COLUMN_DURATION = "duration";
+
+    //Noise detector data columns
+    private static final String COLUMN_VOLUME = "volume";
+    private static final String COLUMN_DB_COUNT = "db_count";
+
+    //Battery data columns
+    private static final String COLUMN_BATTERY_LEVEL = "battery_level";
+
+    //Network data columns
+    private static final String COLUMN_NETWORK_INFO = "network_info";
 
     public DatabaseHelper(@Nullable Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -111,6 +128,43 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         COLUMN_PACKAGE + " VARCHAR(60)" +
                         ");";
 
+        queries[7] =
+                "CREATE TABLE " + TABLE_NOISE_DETECTOR_DATA + " (" +
+                        COLUMN_ID + " INTEGER PRIMARY KEY NOT NULL REFERENCES DATA," +
+                        COLUMN_VOLUME + " INTEGER, " +
+                        COLUMN_DB_COUNT + " FLOAT" +
+                        ");";
+
+        queries[8] =
+                "CREATE TABLE " + TABLE_STATES_ON_OFF + " (" +
+                        COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                        COLUMN_NAME + " VARCHAR(5)" +
+                        ");";
+
+        queries[9] =
+                "CREATE TABLE " + TABLE_ON_OFF_DATA + " (" +
+                        COLUMN_ID + " INTEGER PRIMARY KEY NOT NULL REFERENCES DATA," +
+                        COLUMN_FK_ID_STATE + " INT NOT NULL REFERENCES " + TABLE_STATES_ON_OFF +
+                        ");";
+
+        queries[10] =
+                "CREATE TABLE " + TABLE_TYPES_ON_OFF + " (" +
+                        COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                        COLUMN_NAME + " VARCHAR(20)" +
+                        ");";
+
+        queries[11] =
+                "CREATE TABLE " + TABLE_BATTERY_DATA + " (" +
+                        COLUMN_ID + " INTEGER PRIMARY KEY NOT NULL REFERENCES DATA," +
+                        COLUMN_BATTERY_LEVEL + " INTEGER" +
+                        ");";
+
+        queries[12] =
+                "CREATE TABLE " + TABLE_NETWORK_DATA + " (" +
+                        COLUMN_ID + " INTEGER PRIMARY KEY NOT NULL REFERENCES DATA," +
+                        COLUMN_NETWORK_INFO + " TEXT" +
+                        ");";
+
         for (int i = 0; i < NUMBER_OF_TABLES; i++) {
             db.execSQL(queries[i]);
         }
@@ -137,6 +191,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_CALL_STATES);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_SMS_DATA);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_APP_DATA);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_NOISE_DETECTOR_DATA);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_ON_OFF_DATA);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_BATTERY_DATA);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_NETWORK_DATA);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_TYPES_ON_OFF);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_STATES_ON_OFF);
+
 
         onCreate(db);
     }
@@ -211,12 +272,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cv.put(COLUMN_DATETIME, datetime);
 
         long result = db.insert(TABLE_DATA, null, cv);
-        if (result == -1) {
-            Toast.makeText(context, "Adding to database failed", Toast.LENGTH_SHORT).show();
-        }
-        else {
-            Toast.makeText(context, "Successfully added to database", Toast.LENGTH_SHORT).show();
-        }
+
 
     }
 
@@ -265,12 +321,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cv.put(COLUMN_NAME, name);
 
         long result = db.insert(TABLE_CALL_STATES, null, cv);
-        if (result == -1) {
-            Toast.makeText(context, "Adding to database failed", Toast.LENGTH_SHORT).show();
-        }
-        else {
-            Toast.makeText(context, "Successfully added to database", Toast.LENGTH_SHORT).show();
-        }
 
     }
 
@@ -279,12 +329,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         ContentValues cv = new ContentValues();
 
         long result = db.insert(TABLE_SMS_DATA, null, cv);
-        if (result == -1) {
-            Toast.makeText(context, "Adding to database failed", Toast.LENGTH_SHORT).show();
-        }
-        else {
-            Toast.makeText(context, "Successfully added to database", Toast.LENGTH_SHORT).show();
-        }
 
     }
 
@@ -315,6 +359,33 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     }
 
+    public void addRecordNoiseDetectorData(String datetime, String userID, int volume, float dbCount) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cvNoiseDetector = new ContentValues();
+        ContentValues cvData = new ContentValues();
+        Long lastID = Long.valueOf(0);
+
+        cvData.put(COLUMN_DATETIME, datetime);
+        cvData.put(COLUMN_USER_ID, userID);
+
+        cvNoiseDetector.put(COLUMN_VOLUME, volume);
+        cvNoiseDetector.put(COLUMN_DB_COUNT, dbCount);
+
+        db.beginTransaction();
+
+        try {
+
+            lastID = db.insert(TABLE_DATA, null, cvData);
+            cvNoiseDetector.put(COLUMN_ID, lastID);
+            db.insert(TABLE_NOISE_DETECTOR_DATA, null, cvNoiseDetector);
+
+            db.setTransactionSuccessful();
+        }
+        finally {
+            db.endTransaction();
+        }
+    }
+
     public static List<String> getTableNames() {
         List<String> tables = new ArrayList<>();
         tables.add(TABLE_APP_DATA);
@@ -324,6 +395,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         tables.add(TABLE_MOTION_SENSOR_READINGS);
         tables.add(TABLE_MOTION_SENSORS);
         tables.add(TABLE_SMS_DATA);
+        tables.add(TABLE_NOISE_DETECTOR_DATA);
+        tables.add(TABLE_NETWORK_DATA);
+        tables.add(TABLE_BATTERY_DATA);
+        tables.add(TABLE_ON_OFF_DATA);
+        tables.add(TABLE_STATES_ON_OFF);
+        tables.add(TABLE_TYPES_ON_OFF);
 
         return tables;
     }
