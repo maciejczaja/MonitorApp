@@ -13,7 +13,12 @@
     <string name="magnetic_field">Magnetic field</string>
     <string name="light">Light</string>
     <string name="gravity">Gravity</string>
-    <string name="accelerometer">Accelerometr</string>
+    <string name="accelerometer">Accelerometer</string>
     <string name="gyroscope">Gyroscope</string>
     <string name="sound_level_meter">Sound level meter</string>
+    <string name="buttonStop">Stop</string>
+    <string name="buttonStart">Start</string>
+    <string name="delay_empty_error">Specify the delay or uncheck foreground app switch.</string>
+    <string name="delay_zero_error">Set delay value other than zero.</string>
+    <string name="delay_negative_error">Set positive number as delay value.</string>
 </resources>

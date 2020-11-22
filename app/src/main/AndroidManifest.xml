@@ -38,7 +38,8 @@
         </activity>
         <activity
             android:name=".view.ZipActivity"
-            android:parentActivityName=".view.ZipActivity" />
+            android:parentActivityName=".view.ZipActivity"
+            />
 
         <service android:name=".services.AirplaneModeService" />
         <service android:name=".services.BatteryService" />

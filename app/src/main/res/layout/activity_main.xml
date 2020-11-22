@@ -174,12 +174,10 @@
             android:id="@+id/AppReadDelayLayout"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:ems="5"
-            app:layout_constraintBottom_toTopOf="@+id/Button_start_stop"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.517"
+            app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="@+id/Foreground_app"
-            app:layout_constraintTop_toBottomOf="@+id/Foreground_app"
+            app:layout_constraintTop_toTopOf="@+id/Foreground_app"
             app:layout_constraintVertical_bias="1.0">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -192,11 +190,25 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
+        <TextView
+            android:id="@+id/delay_text_error"
+            android:layout_width="250dp"
+            android:layout_height="50dp"
+            android:layout_marginTop="48dp"
+            android:gravity="center"
+            android:textColor="#F44336"
+            android:textSize="17sp"
+            android:visibility="invisible"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.503"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/Foreground_app" />
+
         <Button
             android:id="@+id/Button_start_stop"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="684dp"
+            android:layout_marginTop="730dp"
             android:text="@string/start"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.3"
@@ -207,7 +219,7 @@
             android:id="@+id/Button_send"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="684dp"
+            android:layout_marginTop="730dp"
             android:text="@string/send_to_drive"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.7"

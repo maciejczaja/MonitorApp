@@ -8,9 +8,12 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -32,6 +35,8 @@ import com.monitorapp.services.ScreenOnOffService;
 import com.monitorapp.services.SensorsService;
 import com.monitorapp.services.SmsService;
 
+import org.w3c.dom.Text;
+
 import java.io.IOException;
 
 import static com.monitorapp.enums.AppRunState.STATE_CHECK_PERMISSION;
@@ -46,7 +51,6 @@ import static com.monitorapp.enums.SensorType.TYPE_MAGNETIC_FIELD;
 public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_CODE_PERMISSIONS_ALL = 101;
-    private static final int REQUEST_CODE_ZIP_ACTIVITY = 102;
 
     private static final String[] PERMISSIONS = {
             Manifest.permission.RECORD_AUDIO,
@@ -77,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
     private Button buttonSend;
     private Button buttonStartStop;
     private boolean buttonStartStopStatus = false;
+    private TextView delayTextError;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,36 +121,32 @@ public class MainActivity extends AppCompatActivity {
         switchForegroundApp = findViewById(R.id.Foreground_app);
 
         editTextDelay = findViewById(R.id.Foreground_app_delay);
+        delayTextError = findViewById(R.id.delay_text_error);
         TextWatcher delayInputTextWatcher = new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 String delayInput = editTextDelay.getText().toString().trim();
-                if (delayInput.isEmpty()) {
-                    switchForegroundApp.setChecked(false);
-                }
+                textViewerLogic(delayInput);
             }
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 String delayInput = editTextDelay.getText().toString().trim();
-                switchForegroundApp.setEnabled(!delayInput.isEmpty());
+                textViewerLogic(delayInput);
             }
 
             @Override
             public void afterTextChanged(Editable editable) {
                 String delayInput = editTextDelay.getText().toString().trim();
-                if (delayInput.isEmpty()) {
-                    switchForegroundApp.setChecked(false);
-                }
+                textViewerLogic(delayInput);
             }
         };
         editTextDelay.addTextChangedListener(delayInputTextWatcher);
-        if (editTextDelay.getText().toString().isEmpty()) {
-            switchForegroundApp.setEnabled(false);
-        }
 
         buttonSend = findViewById(R.id.Button_send);
-        buttonSend.setOnClickListener(view -> startActivityForResult(new Intent(this, ZipActivity.class), REQUEST_CODE_ZIP_ACTIVITY));
+        buttonSend.setOnClickListener(view -> {
+            startActivity(new Intent(getApplicationContext(), ZipActivity.class));
+        });
 
         buttonStartStop = findViewById(R.id.Button_start_stop);
         buttonStartStop.setText("Start");
@@ -187,10 +188,10 @@ public class MainActivity extends AppCompatActivity {
     public void changeButtonText() {
 
         if (!buttonStartStopStatus) {
-            buttonStartStop.setText("Stop");
+            buttonStartStop.setText(R.string.buttonStop);
             buttonStartStopStatus = true;
         } else {
-            buttonStartStop.setText("Start");
+            buttonStartStop.setText(R.string.buttonStart);
             buttonStartStopStatus = false;
         }
     }
@@ -398,10 +399,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         /* FOREGROUND APP */
-        String delayString = editTextDelay.getText().toString();
-        if (delayString.isEmpty()) {
+        if (!hasUsageStatsPermission()) {
             switchForegroundApp.setEnabled(false);
         }
+
+        String delayString = editTextDelay.getText().toString();
 
         if (state == STATE_START) {
             if (switchForegroundApp.isChecked()) {
@@ -427,6 +429,37 @@ public class MainActivity extends AppCompatActivity {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    public void onClickButtonSend(View view) {
+        startActivity(new Intent(getApplicationContext(), ZipActivity.class));
+    }
+
+    public void textViewerLogic(String delayInput) {
+        if (delayInput.isEmpty() && switchForegroundApp.isChecked()) {
+            buttonStartStop.setEnabled(false);
+            delayTextError.setText(R.string.delay_empty_error);
+            delayTextError.setVisibility(View.VISIBLE);
+        } else {
+            buttonStartStop.setEnabled(true);
+            delayTextError.setVisibility(View.INVISIBLE);
+        }
+
+        if (delayInput.startsWith("-")) {
+            buttonStartStop.setEnabled(false);
+            delayTextError.setText(R.string.delay_negative_error);
+            delayTextError.setVisibility(View.VISIBLE);
+        }
+
+        if (editTextDelay.getText().toString().equals("0") || editTextDelay.getText().toString().equals("00")) {
+            buttonStartStop.setEnabled(false);
+            delayTextError.setText(R.string.delay_zero_error);
+            delayTextError.setVisibility(View.VISIBLE);
+        }
+
+        if (buttonStartStop.isEnabled()) {
+            delayTextError.setVisibility(View.INVISIBLE);
         }
     }
 }
