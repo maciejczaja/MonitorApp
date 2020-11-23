@@ -34,7 +34,7 @@ public class ZipUtils {
         Callable<File> cZipFile = () -> {
             File zipFile = null;
             try {
-                if(password == "") {
+                if(password.isEmpty()) {
                     zipFile = zipNoPassword(activity, path);
                 }
                 else {

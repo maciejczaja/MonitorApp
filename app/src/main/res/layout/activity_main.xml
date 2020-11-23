@@ -190,25 +190,11 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <TextView
-            android:id="@+id/delay_text_error"
-            android:layout_width="250dp"
-            android:layout_height="50dp"
-            android:layout_marginTop="48dp"
-            android:gravity="center"
-            android:textColor="#F44336"
-            android:textSize="17sp"
-            android:visibility="invisible"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.503"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/Foreground_app" />
-
         <Button
             android:id="@+id/Button_start_stop"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="730dp"
+            android:layout_marginTop="680dp"
             android:text="@string/start"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.3"
@@ -219,7 +205,7 @@
             android:id="@+id/Button_send"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="730dp"
+            android:layout_marginTop="680dp"
             android:text="@string/send_to_drive"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.7"
