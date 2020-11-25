@@ -102,7 +102,12 @@ public class SQLExporter extends Service {
             writeSingleValue(csvWrite, "dbVersion = " + db.getVersion());
             for (String table: tables) {
                 writeSingleValue(csvWrite, "table=" + table);
-                csvCursor = db.rawQuery("SELECT * FROM " + table, null);
+                if (table.equals("Motion_sensors") || table.equals("Data") || table.equals("Call_states") ||
+                        table.equals("States_on_off") || table.equals("Types_on_off")) {
+                    csvCursor = db.rawQuery("SELECT * FROM " + table, null);
+                } else {
+                    csvCursor = db.rawQuery("SELECT * FROM " + table + " LEFT JOIN Data ON " + table + ".id == Data.id", null);
+                }
                 csvWrite.writeNext(csvCursor.getColumnNames());
                 while(csvCursor.moveToNext()) {
                     int columns = csvCursor.getColumnCount();
