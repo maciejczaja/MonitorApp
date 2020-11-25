@@ -6,17 +6,18 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.monitorapp.R;
-import com.nbsp.materialfilepicker.MaterialFilePicker;
 import com.nbsp.materialfilepicker.ui.FilePickerActivity;
 
 import java.util.regex.Pattern;
 
+import static com.monitorapp.utils.FilePickerUtils.showFilePicker;
+import static com.monitorapp.utils.StorageUtils.getCsvStoragePath;
 import static com.monitorapp.utils.ZipUtils.makeZipFile;
 
 public class ZipActivity extends Activity {
 
     private static final String TAG = "ZipActivity";
-    private static final int REQUEST_CODE_ZIP_FILE = 1001;
+    private static final int REQUEST_CODE_ZIP_FILE = 201;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,18 +25,7 @@ public class ZipActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         Log.d(TAG, " : Started");
-        showFilePicker();
-    }
-
-    public void showFilePicker() {
-        new MaterialFilePicker()
-                .withActivity(this)
-                .withCloseMenu(true)
-                .withFilter(Pattern.compile(".*\\.(csv)$"))
-                .withFilterDirectories(false)
-                .withTitle("Select a CSV file.")
-                .withRequestCode(REQUEST_CODE_ZIP_FILE)
-                .start();
+        showFilePicker(this, getCsvStoragePath(this), Pattern.compile(".*\\.(csv)$"), "Select a CSV file.", REQUEST_CODE_ZIP_FILE);
     }
 
     @Override

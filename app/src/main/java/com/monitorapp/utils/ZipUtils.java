@@ -3,8 +3,6 @@ package com.monitorapp.utils;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.text.InputType;
 import android.util.Log;
 import android.widget.EditText;
@@ -23,7 +21,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.Callable;
 
-import static android.app.Activity.RESULT_OK;
+import static com.monitorapp.utils.StorageUtils.getZipStoragePath;
 
 public class ZipUtils {
 
@@ -34,10 +32,9 @@ public class ZipUtils {
         Callable<File> cZipFile = () -> {
             File zipFile = null;
             try {
-                if(password == "") {
+                if (password.isEmpty()) {
                     zipFile = zipNoPassword(activity, path);
-                }
-                else {
+                } else {
                     zipFile = zipWithPassword(activity, path, password.toCharArray());
                 }
             } catch (ZipException e) {
@@ -64,9 +61,9 @@ public class ZipUtils {
         zipParameters.setEncryptionMethod(EncryptionMethod.AES);
         zipParameters.setAesKeyStrength(AesKeyStrength.KEY_STRENGTH_256);
 
-        String defaultLocation = activity.getFilesDir().getParent();
+        //String defaultLocation = activity.getFilesDir().getParent();
 
-        ZipFile zipFile = new ZipFile(defaultLocation + "/" + dateString + ".zip", password);
+        ZipFile zipFile = new ZipFile(getZipStoragePath(activity) + "/" + dateString + ".zip", password);
         zipFile.addFile(new File(file), zipParameters);
 
         return zipFile.getFile();
@@ -77,9 +74,9 @@ public class ZipUtils {
         Date date = new Date();
         String dateString = simpleDateFormat.format(date);
 
-        String defaultLocation = activity.getFilesDir().getParent();
+        //String defaultLocation = activity.getFilesDir().getParent();
 
-        ZipFile zipFile = new ZipFile(defaultLocation + "/" + dateString + ".zip");
+        ZipFile zipFile = new ZipFile(getZipStoragePath(activity) + "/" + dateString + ".zip");
         zipFile.addFile(new File(file));
 
         return zipFile.getFile();
@@ -92,23 +89,15 @@ public class ZipUtils {
         input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
         builder.setView(input);
 
-        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                password = input.getText().toString();
-                try {
-                    zipFunction.call();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+        builder.setPositiveButton(android.R.string.ok, (dialogInterface, i) -> {
+            password = input.getText().toString();
+            try {
+                zipFunction.call();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         });
-        builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.cancel();
-            }
-        });
+        builder.setNegativeButton(android.R.string.cancel, (dialogInterface, i) -> dialogInterface.cancel());
         builder.show();
     }
 }

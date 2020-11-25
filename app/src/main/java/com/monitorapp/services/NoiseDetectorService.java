@@ -6,8 +6,8 @@ import android.media.MediaRecorder;
 import android.os.IBinder;
 import android.util.Log;
 
-import com.monitorapp.DatabaseHelper;
-import com.monitorapp.UserIDStore;
+import com.monitorapp.db_utils.DatabaseHelper;
+import com.monitorapp.db_utils.UserIDStore;
 
 import java.io.IOException;
 import java.sql.Date;

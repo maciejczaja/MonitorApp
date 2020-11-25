@@ -1,11 +1,10 @@
-package com.monitorapp;
+package com.monitorapp.db_utils;
 
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
@@ -222,8 +221,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public void addRecordMotionSensorReadings(String user_id, String datetime,
-                                       Float x_axis, Float y_axis, Float z_axis,
-                                       String sensorName) {
+                                              Float x_axis, Float y_axis, Float z_axis,
+                                              String sensorName) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cvData = new ContentValues();
         ContentValues cvSensor = new ContentValues();
@@ -346,11 +345,28 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     }
 
-    void addRecordTextMessageData() {
+    public void addRecordTextMessageData(String userID, String datetime) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
+        ContentValues cvData = new ContentValues();
+        Long lastID = Long.valueOf(0);
 
-        long result = db.insert(TABLE_SMS_DATA, null, cv);
+        cvData.put(COLUMN_USER_ID, userID);
+        cvData.put(COLUMN_DATETIME, datetime);
+
+        db.beginTransaction();
+
+        try {
+
+            lastID = db.insert(TABLE_DATA, null, cvData);
+            cv.put(COLUMN_ID, lastID);
+            db.insert(TABLE_SMS_DATA, null, cv);
+
+            db.setTransactionSuccessful();
+        }
+        finally {
+            db.endTransaction();
+        }
 
     }
 
@@ -525,6 +541,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             db.endTransaction();
         }
     }
+
+    //public void addTextMessageData(String datetime, String userID, )
 
     public static List<String> getTableNames() {
         List<String> tables = new ArrayList<>();

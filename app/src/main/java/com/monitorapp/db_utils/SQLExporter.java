@@ -1,18 +1,20 @@
-package com.monitorapp;
+package com.monitorapp.db_utils;
 
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
 
-import java.io.FileWriter;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
 import com.opencsv.CSVWriter;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+
+import static com.monitorapp.utils.StorageUtils.csvDirectory;
 
 public class SQLExporter {
 
@@ -35,13 +37,6 @@ public class SQLExporter {
     public static Cursor getAllData(SQLiteDatabase db) {
         Cursor cursor = db.rawQuery("select * from my_stats", null);
         return cursor;
-    }
-
-    public static String getExternalStorage() {
-        //if (android.os.Build.VERSION.SDK_INT < 30)
-            return Environment.getExternalStorageDirectory().toString();
-        //else
-            //return getApplicationContext().getExternalFilesDir();
     }
 
     private static void writeSingleValue(CSVWriter writer, String value) {
@@ -84,17 +79,18 @@ public class SQLExporter {
     }
 
     public static String generateFileName() {
-        SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+        SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy HH.mm.ss");
         Date date = new Date(System.currentTimeMillis());
         String name = "database_export_" + formatter.format(date) + ".csv";
         return name;
     }
 
-    public static String export(SQLiteDatabase db) throws IOException {
+    public static String export(SQLiteDatabase db, Context context) throws IOException {
         if (!isExternalStorageWritable()) {
             throw new IOException("Cannot write to external storage");
         }
-        File targetDir = createDirectory(Environment.getExternalStorageDirectory().toString());
+
+        File targetDir = createDirectory(csvDirectory.toString());
         String fileName = generateFileName();
         File targetFile = new File(targetDir, fileName);
         try {
