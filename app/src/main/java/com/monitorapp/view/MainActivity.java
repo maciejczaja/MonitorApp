@@ -1,7 +1,6 @@
 package com.monitorapp.view;
 
 import android.Manifest;
-import android.app.AlertDialog;
 import android.app.AppOpsManager;
 import android.content.Context;
 import android.content.Intent;
@@ -12,6 +11,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -19,9 +19,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.app.ActivityCompat;
 
-import com.monitorapp.db_utils.DatabaseHelper;
+import com.monitorapp.DatabaseHelper;
 import com.monitorapp.R;
-import com.monitorapp.db_utils.SQLExporter;
+import com.monitorapp.SQLExporter;
 import com.monitorapp.enums.AppRunState;
 import com.monitorapp.services.AirplaneModeService;
 import com.monitorapp.services.BatteryService;
@@ -43,13 +43,6 @@ import static com.monitorapp.enums.SensorType.TYPE_GRAVITY;
 import static com.monitorapp.enums.SensorType.TYPE_GYROSCOPE;
 import static com.monitorapp.enums.SensorType.TYPE_LIGHT;
 import static com.monitorapp.enums.SensorType.TYPE_MAGNETIC_FIELD;
-import static com.monitorapp.utils.StorageUtils.csvMkdir;
-import static com.monitorapp.utils.StorageUtils.getExternalStoragePath;
-import static com.monitorapp.utils.StorageUtils.isCsvStorageReadable;
-import static com.monitorapp.utils.StorageUtils.isCsvStorageWritable;
-import static com.monitorapp.utils.StorageUtils.isZipStorageReadable;
-import static com.monitorapp.utils.StorageUtils.isZipStorageWritable;
-import static com.monitorapp.utils.StorageUtils.zipMkdir;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -64,8 +57,6 @@ public class MainActivity extends AppCompatActivity {
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.READ_EXTERNAL_STORAGE
     };
-
-    private static final String TAG = "MainActivity";
 
     private SwitchCompat switchSoundLevelMeter;
     private SwitchCompat switchGyroscope;
@@ -83,26 +74,16 @@ public class MainActivity extends AppCompatActivity {
 
     private EditText editTextDelay;
 
-    private Button buttonZip;
-    private Button buttonStartStop;
     private Button buttonSend;
+    private Button buttonStartStop;
 
     private boolean buttonStartStopStatus = false;
-
-    public static String PACKAGE_NAME;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        PACKAGE_NAME = getApplicationContext().getPackageName();
-
-        /* Create folders for CSV and ZIP files respectively if non-existing */
-        csvMkdir(this);
-        zipMkdir(this);
-
         initUIComponents();
     }
 
@@ -149,6 +130,7 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     switchForegroundApp.setEnabled(true);
                 }
+
             }
 
             @Override
@@ -157,8 +139,10 @@ public class MainActivity extends AppCompatActivity {
         };
         editTextDelay.addTextChangedListener(delayInputTextWatcher);
 
-        buttonZip = findViewById(R.id.Button_zip);
-        buttonZip.setOnClickListener(view -> startActivity(new Intent(getApplicationContext(), ZipActivity.class)));
+        buttonSend = findViewById(R.id.Button_send);
+        buttonSend.setOnClickListener(view -> {
+            startActivity(new Intent(getApplicationContext(), ZipActivity.class));
+        });
 
         buttonStartStop = findViewById(R.id.Button_start_stop);
         buttonStartStop.setText(R.string.button_start);
@@ -168,10 +152,6 @@ public class MainActivity extends AppCompatActivity {
             else
                 action(STATE_STOP);
         });
-
-        buttonSend = findViewById(R.id.Button_send);
-        buttonSend.setOnClickListener(view -> startActivity(new Intent(getApplicationContext(), DriveActivity.class)
-                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)));
     }
 
     private void requestPermissions() {
@@ -184,28 +164,11 @@ public class MainActivity extends AppCompatActivity {
         if (!hasUsageStatsPermission()) {
             requestUsageStatsPermission();
         }
-
-        if (!hasReadWriteStorageAccess()) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("Cannot read/write data");
-            builder.setMessage("Cannot read/write data from " + getExternalStoragePath(this)
-                    + " which may cause problems with functioning of this app. Please contact app supplier for further help.");
-
-            builder.setPositiveButton(android.R.string.ok, (dialog, which) -> {
-            });
-            builder.show();
-        }
-    }
-
-    private boolean hasReadWriteStorageAccess() {
-        return isCsvStorageReadable()
-                && isCsvStorageWritable()
-                && isZipStorageReadable()
-                && isZipStorageWritable();
     }
 
     private void requestUsageStatsPermission() {
-        startActivity(new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS));
+        Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
+        startActivity(intent);
     }
 
     private boolean hasPermissions() {
@@ -266,6 +229,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void action(AppRunState state) {
 
+        SQLExporter exporter = new SQLExporter();
         DatabaseHelper dbHelper = new DatabaseHelper(this);
 
         if (state != STATE_CHECK_PERMISSION)
@@ -472,7 +436,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (state == STATE_STOP) {
             try {
-                SQLExporter.export(dbHelper.getWritableDatabase(), this);
+                exporter.export(dbHelper.getWritableDatabase());
             } catch (IOException e) {
                 e.printStackTrace();
             }

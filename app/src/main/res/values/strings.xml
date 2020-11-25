@@ -2,7 +2,7 @@
     <string name="app_name">MonitorApp</string>
     <string name="delay">delay</string>
     <string name="foreground_app">Foreground App</string>
-    <string name="zip_file">ZIP File</string>
+    <string name="send_to_drive">Send to drive</string>
     <string name="start">Start</string>
     <string name="network">Network</string>
     <string name="airplane_mode">Airplane mode</string>
@@ -18,6 +18,4 @@
     <string name="sound_level_meter">Sound level meter</string>
     <string name="button_stop">Stop</string>
     <string name="button_start">Start</string>
-    <string name="send_file">Send</string>
-    <string name="please_wait">Please wait...</string>
 </resources>
