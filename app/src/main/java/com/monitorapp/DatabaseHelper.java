@@ -70,9 +70,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     //On off data columns
     private static final String COLUMN_FK_ID_TYPE = "fk_id_type";
 
+    private static DatabaseHelper instance;
+
     public DatabaseHelper(@Nullable Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
         this.context = context;
+    }
+
+
+    public static synchronized DatabaseHelper getHelper(Context context)
+    {
+        if (instance == null)
+            instance = new DatabaseHelper(context);
+
+        return instance;
     }
 
     @Override
@@ -346,11 +357,28 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     }
 
-    void addRecordTextMessageData() {
+    public void addRecordTextMessageData(String userID, String datetime) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
+        ContentValues cvData = new ContentValues();
+        Long lastID = Long.valueOf(0);
 
-        long result = db.insert(TABLE_SMS_DATA, null, cv);
+        cvData.put(COLUMN_USER_ID, userID);
+        cvData.put(COLUMN_DATETIME, datetime);
+
+        db.beginTransaction();
+
+        try {
+
+            lastID = db.insert(TABLE_DATA, null, cvData);
+            cv.put(COLUMN_ID, lastID);
+            db.insert(TABLE_SMS_DATA, null, cv);
+
+            db.setTransactionSuccessful();
+        }
+        finally {
+            db.endTransaction();
+        }
 
     }
 
@@ -525,6 +553,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             db.endTransaction();
         }
     }
+
+    //public void addTextMessageData(String datetime, String userID, )
 
     public static List<String> getTableNames() {
         List<String> tables = new ArrayList<>();

@@ -32,7 +32,7 @@ public class SensorsService extends Service {
 
         public void onSensorChanged(SensorEvent event) {
             float[] values = event.values;
-            DatabaseHelper dbHelper = new DatabaseHelper(getApplicationContext());
+            DatabaseHelper dbHelper = DatabaseHelper.getHelper(getApplicationContext());;
 
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
             Date date = new Date(System.currentTimeMillis());

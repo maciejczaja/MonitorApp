@@ -11,6 +11,12 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+import com.monitorapp.DatabaseHelper;
+import com.monitorapp.UserIDStore;
+
+import java.sql.Date;
+import java.text.SimpleDateFormat;
+
 
 public class SmsService extends Service {
 
@@ -47,7 +53,10 @@ class SmsReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        DatabaseHelper dbHelper = DatabaseHelper.getHelper(context);;
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
+        Date date = new Date(System.currentTimeMillis());
         Log.i(TAG, "Sms recieved.");
-
+        dbHelper.addRecordTextMessageData(UserIDStore.id(context), sdf.format(date));
     }
 }

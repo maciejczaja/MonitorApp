@@ -26,7 +26,7 @@ public class NoiseDetectorService extends Service {
     }
 
     public int onStartCommand(Intent intent, int flags, int startId) {
-        dbHelper = new DatabaseHelper(getApplicationContext());
+        dbHelper = DatabaseHelper.getHelper(getApplicationContext());
         if (mRecorder == null) {
             try {
                 mRecorder = new MediaRecorder();
