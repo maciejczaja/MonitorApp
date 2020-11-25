@@ -14,6 +14,18 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/ASL2.0'
+        exclude("META-INF/*.kotlin_module")
+    }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -38,4 +50,12 @@ dependencies {
     implementation 'net.lingala.zip4j:zip4j:2.6.1'
     implementation 'com.nbsp:materialfilepicker:1.9.1'
     implementation 'com.opencsv:opencsv:4.6'
+
+    // Google Drive libraries:
+    implementation 'com.google.android.gms:play-services-auth:19.0.0'
+    implementation ('com.google.apis:google-api-services-drive:v3-rev136-1.25.0') {
+        exclude group: 'org.apache.httpcomponents'
+    }
+    implementation group: 'com.google.api-client', name: 'google-api-client-android', version: '1.31.1'
+    implementation 'com.google.http-client:google-http-client-gson:1.26.0'
 }

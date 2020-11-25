@@ -8,7 +8,7 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
-import com.monitorapp.BroadcastReceiverClass;
+import com.monitorapp.utils.BroadcastReceiverClass;
 
 
 public class ScreenOnOffService extends Service {

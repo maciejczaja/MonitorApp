@@ -13,8 +13,8 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
-import com.monitorapp.DatabaseHelper;
-import com.monitorapp.UserIDStore;
+import com.monitorapp.db_utils.DatabaseHelper;
+import com.monitorapp.db_utils.UserIDStore;
 
 public class CallService extends Service {
 

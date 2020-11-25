@@ -1,4 +1,4 @@
-package com.monitorapp;
+package com.monitorapp.utils;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -9,9 +9,11 @@ import android.net.wifi.WifiManager;
 import android.os.BatteryManager;
 import android.util.Log;
 
+import com.monitorapp.db_utils.DatabaseHelper;
+import com.monitorapp.db_utils.UserIDStore;
+
 import java.sql.Date;
 import java.text.SimpleDateFormat;
-import java.util.concurrent.CopyOnWriteArraySet;
 
 public class BroadcastReceiverClass extends BroadcastReceiver {
 

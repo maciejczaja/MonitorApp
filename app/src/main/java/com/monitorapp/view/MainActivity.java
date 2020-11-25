@@ -1,6 +1,7 @@
 package com.monitorapp.view;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.app.AppOpsManager;
 import android.content.Context;
 import android.content.Intent;
@@ -8,12 +9,9 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.text.Editable;
-import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -21,11 +19,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.app.ActivityCompat;
 
-import com.monitorapp.DatabaseHelper;
+import com.monitorapp.db_utils.DatabaseHelper;
 import com.monitorapp.R;
-import com.monitorapp.SQLExporter;
-import com.monitorapp.services.AirplaneModeService;
+import com.monitorapp.db_utils.SQLExporter;
 import com.monitorapp.enums.AppRunState;
+import com.monitorapp.services.AirplaneModeService;
 import com.monitorapp.services.BatteryService;
 import com.monitorapp.services.CallService;
 import com.monitorapp.services.ForegroundAppService;
@@ -34,8 +32,6 @@ import com.monitorapp.services.NoiseDetectorService;
 import com.monitorapp.services.ScreenOnOffService;
 import com.monitorapp.services.SensorsService;
 import com.monitorapp.services.SmsService;
-
-import org.w3c.dom.Text;
 
 import java.io.IOException;
 
@@ -47,6 +43,13 @@ import static com.monitorapp.enums.SensorType.TYPE_GRAVITY;
 import static com.monitorapp.enums.SensorType.TYPE_GYROSCOPE;
 import static com.monitorapp.enums.SensorType.TYPE_LIGHT;
 import static com.monitorapp.enums.SensorType.TYPE_MAGNETIC_FIELD;
+import static com.monitorapp.utils.StorageUtils.csvMkdir;
+import static com.monitorapp.utils.StorageUtils.getExternalStoragePath;
+import static com.monitorapp.utils.StorageUtils.isCsvStorageReadable;
+import static com.monitorapp.utils.StorageUtils.isCsvStorageWritable;
+import static com.monitorapp.utils.StorageUtils.isZipStorageReadable;
+import static com.monitorapp.utils.StorageUtils.isZipStorageWritable;
+import static com.monitorapp.utils.StorageUtils.zipMkdir;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -61,6 +64,8 @@ public class MainActivity extends AppCompatActivity {
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.READ_EXTERNAL_STORAGE
     };
+
+    private static final String TAG = "MainActivity";
 
     private SwitchCompat switchSoundLevelMeter;
     private SwitchCompat switchGyroscope;
@@ -78,16 +83,26 @@ public class MainActivity extends AppCompatActivity {
 
     private EditText editTextDelay;
 
-    private Button buttonSend;
+    private Button buttonZip;
     private Button buttonStartStop;
+    private Button buttonSend;
+
     private boolean buttonStartStopStatus = false;
-    private TextView delayTextError;
+
+    public static String PACKAGE_NAME;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        PACKAGE_NAME = getApplicationContext().getPackageName();
+
+        /* Create folders for CSV and ZIP files respectively if non-existing */
+        csvMkdir(this);
+        zipMkdir(this);
+
         initUIComponents();
     }
 
@@ -121,41 +136,42 @@ public class MainActivity extends AppCompatActivity {
         switchForegroundApp = findViewById(R.id.Foreground_app);
 
         editTextDelay = findViewById(R.id.Foreground_app_delay);
-        delayTextError = findViewById(R.id.delay_text_error);
         TextWatcher delayInputTextWatcher = new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                String delayInput = editTextDelay.getText().toString().trim();
-                textViewerLogic(delayInput);
             }
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 String delayInput = editTextDelay.getText().toString().trim();
-                textViewerLogic(delayInput);
+                if (delayInput.startsWith("-") || delayInput.startsWith("+") || delayInput.equals("0") || delayInput.equals("00")) {
+                    switchForegroundApp.setEnabled(false);
+                } else {
+                    switchForegroundApp.setEnabled(true);
+                }
             }
 
             @Override
             public void afterTextChanged(Editable editable) {
-                String delayInput = editTextDelay.getText().toString().trim();
-                textViewerLogic(delayInput);
             }
         };
         editTextDelay.addTextChangedListener(delayInputTextWatcher);
 
-        buttonSend = findViewById(R.id.Button_send);
-        buttonSend.setOnClickListener(view -> {
-            startActivity(new Intent(getApplicationContext(), ZipActivity.class));
-        });
+        buttonZip = findViewById(R.id.Button_zip);
+        buttonZip.setOnClickListener(view -> startActivity(new Intent(getApplicationContext(), ZipActivity.class)));
 
         buttonStartStop = findViewById(R.id.Button_start_stop);
-        buttonStartStop.setText("Start");
+        buttonStartStop.setText(R.string.button_start);
         buttonStartStop.setOnClickListener(view -> {
             if (!buttonStartStopStatus)
                 action(STATE_START);
             else
                 action(STATE_STOP);
         });
+
+        buttonSend = findViewById(R.id.Button_send);
+        buttonSend.setOnClickListener(view -> startActivity(new Intent(getApplicationContext(), DriveActivity.class)
+                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)));
     }
 
     private void requestPermissions() {
@@ -168,11 +184,28 @@ public class MainActivity extends AppCompatActivity {
         if (!hasUsageStatsPermission()) {
             requestUsageStatsPermission();
         }
+
+        if (!hasReadWriteStorageAccess()) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Cannot read/write data");
+            builder.setMessage("Cannot read/write data from " + getExternalStoragePath(this)
+                    + " which may cause problems with functioning of this app. Please contact app supplier for further help.");
+
+            builder.setPositiveButton(android.R.string.ok, (dialog, which) -> {
+            });
+            builder.show();
+        }
+    }
+
+    private boolean hasReadWriteStorageAccess() {
+        return isCsvStorageReadable()
+                && isCsvStorageWritable()
+                && isZipStorageReadable()
+                && isZipStorageWritable();
     }
 
     private void requestUsageStatsPermission() {
-        Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
-        startActivity(intent);
+        startActivity(new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS));
     }
 
     private boolean hasPermissions() {
@@ -188,10 +221,10 @@ public class MainActivity extends AppCompatActivity {
     public void changeButtonText() {
 
         if (!buttonStartStopStatus) {
-            buttonStartStop.setText(R.string.buttonStop);
+            buttonStartStop.setText(R.string.button_stop);
             buttonStartStopStatus = true;
         } else {
-            buttonStartStop.setText(R.string.buttonStart);
+            buttonStartStop.setText(R.string.button_start);
             buttonStartStopStatus = false;
         }
     }
@@ -233,7 +266,6 @@ public class MainActivity extends AppCompatActivity {
 
     public void action(AppRunState state) {
 
-        SQLExporter exporter = new SQLExporter();
         DatabaseHelper dbHelper = new DatabaseHelper(this);
 
         if (state != STATE_CHECK_PERMISSION)
@@ -409,10 +441,25 @@ public class MainActivity extends AppCompatActivity {
             if (switchForegroundApp.isChecked()) {
                 long delay;
                 if (delayString.isEmpty()) {
-                    Toast.makeText(this, "You haven't specified the delay - app check started with default value of 5 seconds.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "Empty delay field: app check started with delay default value of 5 seconds.", Toast.LENGTH_LONG).show();
                     startService(new Intent(getApplicationContext(), ForegroundAppService.class));
+                } else if (delayString.startsWith("-")) {
+                    Toast.makeText(this, "Negative delay specified: app check started with delay default value of 5 seconds.", Toast.LENGTH_LONG).show();
+                    startService(new Intent(getApplicationContext(), ForegroundAppService.class));
+                } else if (delayString.startsWith("+")) {
+                    delay = Long.parseLong(delayString.substring(1));
+                    Toast.makeText(this, "Redundant plus character: app check started with delay value of " + delayString.substring(1) + " seconds.", Toast.LENGTH_LONG).show();
+                    startService(new Intent(getApplicationContext(), ForegroundAppService.class).putExtra("DELAY", delay));
+                } else if (delayString.equals("0") || delayString.equals("00")) {
+                    Toast.makeText(this, "Delay equals zero: app check started with delay default value of 5 seconds.", Toast.LENGTH_LONG).show();
+                    startService(new Intent(getApplicationContext(), ForegroundAppService.class));
+                } else if (delayString.startsWith("0")) {
+                    delay = Long.parseLong(delayString);
+                    Toast.makeText(this, "App check started with delay value of " + delayString.substring(1) + " seconds.", Toast.LENGTH_LONG).show();
+                    startService(new Intent(getApplicationContext(), ForegroundAppService.class).putExtra("DELAY", delay));
                 } else {
                     delay = Long.parseLong(delayString);
+                    Toast.makeText(this, "App check started with delay value of " + delayString + " seconds.", Toast.LENGTH_LONG).show();
                     startService(new Intent(getApplicationContext(), ForegroundAppService.class).putExtra("DELAY", delay));
                 }
             }
@@ -425,41 +472,10 @@ public class MainActivity extends AppCompatActivity {
 
         if (state == STATE_STOP) {
             try {
-                exporter.export(dbHelper.getWritableDatabase());
+                SQLExporter.export(dbHelper.getWritableDatabase(), this);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
-    }
-
-    public void onClickButtonSend(View view) {
-        startActivity(new Intent(getApplicationContext(), ZipActivity.class));
-    }
-
-    public void textViewerLogic(String delayInput) {
-        if (delayInput.isEmpty() && switchForegroundApp.isChecked()) {
-            buttonStartStop.setEnabled(false);
-            delayTextError.setText(R.string.delay_empty_error);
-            delayTextError.setVisibility(View.VISIBLE);
-        } else {
-            buttonStartStop.setEnabled(true);
-            delayTextError.setVisibility(View.INVISIBLE);
-        }
-
-        if (delayInput.startsWith("-")) {
-            buttonStartStop.setEnabled(false);
-            delayTextError.setText(R.string.delay_negative_error);
-            delayTextError.setVisibility(View.VISIBLE);
-        }
-
-        if (editTextDelay.getText().toString().equals("0") || editTextDelay.getText().toString().equals("00")) {
-            buttonStartStop.setEnabled(false);
-            delayTextError.setText(R.string.delay_zero_error);
-            delayTextError.setVisibility(View.VISIBLE);
-        }
-
-        if (buttonStartStop.isEnabled()) {
-            delayTextError.setVisibility(View.INVISIBLE);
         }
     }
 }

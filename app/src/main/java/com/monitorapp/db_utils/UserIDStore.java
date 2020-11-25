@@ -1,4 +1,4 @@
-package com.monitorapp;
+package com.monitorapp.db_utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
