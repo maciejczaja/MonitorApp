@@ -60,6 +60,7 @@
         <service android:name=".services.ScreenOnOffService" />
         <service android:name=".services.SensorsService" />
         <service android:name=".services.SmsService" />
+        <service android:name=".db_utils.SQLExporter"/>
 
     </application>
 

@@ -69,9 +69,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     //On off data columns
     private static final String COLUMN_FK_ID_TYPE = "fk_id_type";
 
+    private static DatabaseHelper instance;
+
     public DatabaseHelper(@Nullable Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
         this.context = context;
+    }
+
+
+    public static synchronized DatabaseHelper getHelper(Context context)
+    {
+        if (instance == null)
+            instance = new DatabaseHelper(context);
+
+        return instance;
     }
 
     @Override

@@ -59,7 +59,7 @@ public class ForegroundAppService extends Service {
     public void onCreate() {
         /* TODO: idk? */
         super.onCreate();
-        dbHelper = new DatabaseHelper(getApplicationContext());
+        dbHelper = DatabaseHelper.getHelper(getApplicationContext());
     }
 
     @Override

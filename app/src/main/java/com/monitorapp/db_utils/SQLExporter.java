@@ -1,9 +1,13 @@
 package com.monitorapp.db_utils;
 
+import android.app.Service;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
+import android.os.IBinder;
+import android.util.Log;
 
 import com.opencsv.CSVWriter;
 
@@ -16,12 +20,64 @@ import java.util.List;
 
 import static com.monitorapp.utils.StorageUtils.csvDirectory;
 
-public class SQLExporter {
+public class SQLExporter extends Service {
 
-    public static boolean isExternalStorageWritable() {
-        //check if external storage is writable
-        String state = Environment.getExternalStorageState();
-        return Environment.MEDIA_MOUNTED.equals(state);
+    private static final String TAG = "SQL Exporter";
+
+    private boolean isRunning = false;
+
+    @Override
+    public void onCreate() {
+        Log.i(TAG, "Service on create");
+
+        isRunning = true;
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.i(TAG, "Service onStartCommand");
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                DatabaseHelper dbHelper = DatabaseHelper.getHelper(getApplicationContext());
+                SQLiteDatabase db = dbHelper.getWritableDatabase();
+                File targetDir = createDirectory(csvDirectory.toString());
+                String fileName = generateFileName();
+                File targetFile = new File(targetDir, fileName);
+                try {
+                    targetFile.createNewFile();
+                } catch (IOException e){
+                    e.printStackTrace();
+                }
+                List<String> tables = DatabaseHelper.getTableNames();
+                try {
+                    writeCSV(targetFile, db, tables);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    db.close();
+                }
+
+                stopSelf();
+            }
+        }).start();
+
+        return Service.START_STICKY;
+    }
+
+    @Override
+    public IBinder onBind(Intent arg0) {
+        Log.i(TAG, "Service onBind");
+        return null;
+    }
+
+    @Override
+    public void onDestroy() {
+
+        isRunning = false;
+
+        Log.i(TAG, "Service onDestroy");
     }
 
     public static File createDirectory(String path) {
@@ -32,11 +88,6 @@ public class SQLExporter {
         }
         System.out.println(result);
         return dir;
-    }
-
-    public static Cursor getAllData(SQLiteDatabase db) {
-        Cursor cursor = db.rawQuery("select * from my_stats", null);
-        return cursor;
     }
 
     private static void writeSingleValue(CSVWriter writer, String value) {
@@ -83,30 +134,5 @@ public class SQLExporter {
         Date date = new Date(System.currentTimeMillis());
         String name = "database_export_" + formatter.format(date) + ".csv";
         return name;
-    }
-
-    public static String export(SQLiteDatabase db, Context context) throws IOException {
-        if (!isExternalStorageWritable()) {
-            throw new IOException("Cannot write to external storage");
-        }
-
-        File targetDir = createDirectory(csvDirectory.toString());
-        String fileName = generateFileName();
-        File targetFile = new File(targetDir, fileName);
-        try {
-            targetFile.createNewFile();
-        } catch (IOException e){
-            e.printStackTrace();
-        }
-        List<String> tables = DatabaseHelper.getTableNames();
-        try {
-            writeCSV(targetFile, db, tables);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            db.close();
-        }
-
-        return targetFile.getAbsolutePath();
     }
 }

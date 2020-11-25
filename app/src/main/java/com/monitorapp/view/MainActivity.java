@@ -472,8 +472,9 @@ public class MainActivity extends AppCompatActivity {
 
         if (state == STATE_STOP) {
             try {
-                SQLExporter.export(dbHelper.getWritableDatabase(), this);
-            } catch (IOException e) {
+                Intent intent = new Intent(this, SQLExporter.class);
+                startService(intent);
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }

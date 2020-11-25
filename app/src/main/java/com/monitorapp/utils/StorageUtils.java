@@ -37,11 +37,7 @@ public class StorageUtils {
 
     @NotNull
     public static String getExternalStoragePath(Context context) {
-        if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            return Environment.getExternalStorageDirectory().toString();
-        } else {
-            return context.getExternalFilesDir(null).toString();
-        }
+        return context.getExternalFilesDir(null).toString();
     }
 
     @NotNull

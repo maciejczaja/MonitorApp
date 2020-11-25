@@ -59,7 +59,7 @@ class CallReceiver extends BroadcastReceiver {
     private void getCallLog(Context context) {
         Cursor cursor = context.getApplicationContext().getContentResolver().query(CallLog.Calls.CONTENT_URI, null, null,
                 null, CallLog.Calls.DATE + " DESC");
-        DatabaseHelper dbHelper = new DatabaseHelper(context.getApplicationContext());
+        DatabaseHelper dbHelper = DatabaseHelper.getHelper(context);
         if (cursor.getCount() > 0) {
             try {
                 cursor.moveToFirst();
