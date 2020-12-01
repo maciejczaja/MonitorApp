@@ -61,6 +61,7 @@ public class NoiseDetectorService extends Service {
                             Thread.sleep(1000);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
+                            Thread.currentThread().interrupt();
                             break;
                         }
                     }
@@ -76,6 +77,7 @@ public class NoiseDetectorService extends Service {
         tMic.interrupt();
         if (mRecorder != null) {
             mRecorder.stop();
+            mRecorder.reset();
             mRecorder.release();
             mRecorder = null;
         }
