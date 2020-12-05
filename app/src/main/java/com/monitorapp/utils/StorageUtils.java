@@ -1,15 +1,11 @@
 package com.monitorapp.utils;
 
 import android.content.Context;
-import android.os.Build;
-import android.os.Environment;
 import android.util.Log;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-
-import static com.monitorapp.view.MainActivity.PACKAGE_NAME;
 
 public class StorageUtils {
 
@@ -36,18 +32,20 @@ public class StorageUtils {
     }
 
     @NotNull
-    public static String getExternalStoragePath(Context context) {
+    public static String getExternalStoragePath(@NotNull Context context) {
         return context.getExternalFilesDir(null).toString();
     }
 
     @NotNull
     public static String getCsvStoragePath(Context context) {
-        return getExternalStoragePath(context) + "/Android/data/" + PACKAGE_NAME + "/csv/";
+//        return getExternalStoragePath(context) + "/Android/data/" + PACKAGE_NAME + "/csv/";
+        return getExternalStoragePath(context) + "/csv/";
     }
 
     @NotNull
     public static String getZipStoragePath(Context context) {
-        return getExternalStoragePath(context) + "/Android/data/" + PACKAGE_NAME + "/zip/";
+//        return getExternalStoragePath(context) + "/Android/data/" + PACKAGE_NAME + "/zip/";
+        return getExternalStoragePath(context) + "/zip/";
     }
 
     public static boolean isCsvStorageWritable() {

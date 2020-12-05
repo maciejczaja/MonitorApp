@@ -310,60 +310,60 @@ public class MainActivity extends AppCompatActivity {
         /* GYROSCOPE */
         if (state == STATE_START) {
             if (switchGyroscope.isChecked()) {
-                startService(new Intent(getApplicationContext(), SensorsService.class).putExtra("SENSOR_TYPE", TYPE_GYROSCOPE));
+                startService(new Intent(getApplicationContext(), SensorsService.class).putExtra("SENSOR_TYPE", TYPE_GYROSCOPE.getValue()));
                 switchGyroscope.setClickable(false);
             }
         } else if (state == STATE_STOP) {
             if (switchGyroscope.isChecked())
-                stopService(new Intent(getApplicationContext(), SensorsService.class).putExtra("SENSOR_TYPE", TYPE_GYROSCOPE));
+                stopService(new Intent(getApplicationContext(), SensorsService.class).putExtra("SENSOR_TYPE", TYPE_GYROSCOPE.getValue()));
             switchGyroscope.setClickable(true);
         }
 
         /* ACCELEROMETER */
         if (state == STATE_START) {
             if (switchAccelerometer.isChecked())
-                startService(new Intent(getApplicationContext(), SensorsService.class).putExtra("SENSOR_TYPE", TYPE_ACCELEROMETER));
+                startService(new Intent(getApplicationContext(), SensorsService.class).putExtra("SENSOR_TYPE", TYPE_ACCELEROMETER.getValue()));
             switchAccelerometer.setClickable(false);
 
         } else if (state == STATE_STOP) {
             if (switchAccelerometer.isChecked())
-                stopService(new Intent(getApplicationContext(), SensorsService.class).putExtra("SENSOR_TYPE", TYPE_ACCELEROMETER));
+                stopService(new Intent(getApplicationContext(), SensorsService.class).putExtra("SENSOR_TYPE", TYPE_ACCELEROMETER.getValue()));
             switchAccelerometer.setClickable(true);
         }
 
         /* GRAVITY */
         if (state == STATE_START) {
             if (switchGravity.isChecked())
-                startService(new Intent(getApplicationContext(), SensorsService.class).putExtra("SENSOR_TYPE", TYPE_GRAVITY));
+                startService(new Intent(getApplicationContext(), SensorsService.class).putExtra("SENSOR_TYPE", TYPE_GRAVITY.getValue()));
             switchGravity.setClickable(false);
 
         } else if (state == STATE_STOP) {
             if (switchGravity.isChecked())
-                stopService(new Intent(getApplicationContext(), SensorsService.class).putExtra("SENSOR_TYPE", TYPE_GRAVITY));
+                stopService(new Intent(getApplicationContext(), SensorsService.class).putExtra("SENSOR_TYPE", TYPE_GRAVITY.getValue()));
             switchGravity.setClickable(true);
         }
 
         /* LIGHT METER */
         if (state == STATE_START) {
             if (switchLight.isChecked())
-                startService(new Intent(getApplicationContext(), SensorsService.class).putExtra("SENSOR_TYPE", TYPE_LIGHT));
+                startService(new Intent(getApplicationContext(), SensorsService.class).putExtra("SENSOR_TYPE", TYPE_LIGHT.getValue()));
             switchLight.setClickable(false);
 
         } else if (state == STATE_STOP) {
             if (switchLight.isChecked())
-                stopService(new Intent(getApplicationContext(), SensorsService.class).putExtra("SENSOR_TYPE", TYPE_LIGHT));
+                stopService(new Intent(getApplicationContext(), SensorsService.class).putExtra("SENSOR_TYPE", TYPE_LIGHT.getValue()));
             switchLight.setClickable(true);
         }
 
         /* MAGNETIC FIELD */
         if (state == STATE_START) {
             if (switchMagneticField.isChecked())
-                startService(new Intent(getApplicationContext(), SensorsService.class).putExtra("SENSOR_TYPE", TYPE_MAGNETIC_FIELD));
+                startService(new Intent(getApplicationContext(), SensorsService.class).putExtra("SENSOR_TYPE", TYPE_MAGNETIC_FIELD.getValue()));
             switchMagneticField.setClickable(false);
 
         } else if (state == STATE_STOP) {
             if (switchMagneticField.isChecked())
-                stopService(new Intent(getApplicationContext(), SensorsService.class).putExtra("SENSOR_TYPE", TYPE_MAGNETIC_FIELD));
+                stopService(new Intent(getApplicationContext(), SensorsService.class).putExtra("SENSOR_TYPE", TYPE_MAGNETIC_FIELD.getValue()));
             switchMagneticField.setClickable(true);
         }
 
