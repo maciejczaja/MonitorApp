@@ -175,7 +175,7 @@
             android:id="@+id/AppReadDelayLayout"
             android:layout_width="72dp"
             android:layout_height="51dp"
-            android:layout_marginLeft="150dp"
+            android:layout_marginStart="150dp"
             android:ellipsize="start"
             app:layout_constraintStart_toStartOf="@+id/Foreground_app"
             app:layout_constraintTop_toTopOf="@+id/Foreground_app">

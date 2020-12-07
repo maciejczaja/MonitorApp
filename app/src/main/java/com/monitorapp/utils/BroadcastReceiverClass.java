@@ -7,6 +7,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.os.BatteryManager;
+import android.provider.Telephony;
 import android.util.Log;
 
 import com.monitorapp.db_utils.DatabaseHelper;
@@ -62,6 +63,12 @@ public class BroadcastReceiverClass extends BroadcastReceiver {
 
                 Log.d("SCREEN", "Screen Off");
                 dbHelper.addRecordOnOffData("Screen", "Off", UserIDStore.id(context), sdf.format(date));
+                break;
+
+            case Telephony.Sms.Intents.SMS_RECEIVED_ACTION:
+                
+                Log.d("SMS", "Sms recieved.");
+                dbHelper.addRecordTextMessageData(UserIDStore.id(context), sdf.format(date));
                 break;
 
             case ConnectivityManager.CONNECTIVITY_ACTION:

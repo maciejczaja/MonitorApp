@@ -13,6 +13,7 @@ import androidx.annotation.Nullable;
 
 import com.monitorapp.db_utils.DatabaseHelper;
 import com.monitorapp.db_utils.UserIDStore;
+import com.monitorapp.utils.BroadcastReceiverClass;
 
 import java.sql.Date;
 import java.text.SimpleDateFormat;
@@ -20,7 +21,7 @@ import java.text.SimpleDateFormat;
 
 public class SmsService extends Service {
 
-    private SmsReceiver mSmsReceiver;
+    private BroadcastReceiverClass mSmsReceiver;
 
     @Nullable
     @Override
@@ -30,7 +31,7 @@ public class SmsService extends Service {
 
     @Override
     public void onCreate() {
-        mSmsReceiver = new SmsReceiver();
+        mSmsReceiver = new BroadcastReceiverClass();
         IntentFilter filter = new IntentFilter();
         filter.addAction(Telephony.Sms.Intents.SMS_RECEIVED_ACTION);
         registerReceiver(mSmsReceiver, filter);
@@ -44,19 +45,5 @@ public class SmsService extends Service {
             }
         } catch (IllegalArgumentException e) {
         }
-    }
-}
-
-class SmsReceiver extends BroadcastReceiver {
-
-    private static final String TAG = SmsReceiver.class.getSimpleName();
-
-    @Override
-    public void onReceive(Context context, Intent intent) {
-        DatabaseHelper dbHelper = DatabaseHelper.getHelper(context);
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
-        Date date = new Date(System.currentTimeMillis());
-        Log.i(TAG, "Sms recieved.");
-        dbHelper.addRecordTextMessageData(UserIDStore.id(context), sdf.format(date));
     }
 }
