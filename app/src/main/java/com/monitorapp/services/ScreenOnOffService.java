@@ -1,14 +1,18 @@
 package com.monitorapp.services;
 
+import android.app.Notification;
 import android.app.Service;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
 
 import com.monitorapp.utils.BroadcastReceiverClass;
+
+import static com.monitorapp.utils.NotificationUtils.myNotification;
 
 
 public class ScreenOnOffService extends Service {
@@ -28,6 +32,11 @@ public class ScreenOnOffService extends Service {
         filter.addAction(Intent.ACTION_SCREEN_ON);
         filter.addAction(Intent.ACTION_SCREEN_OFF);
         registerReceiver(mScreenReceiver, filter);
+
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O)
+            startForeground(1, myNotification(getApplicationContext()));
+        else
+            startForeground(1, new Notification());
     }
 
     @Override

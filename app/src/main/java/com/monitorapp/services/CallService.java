@@ -1,11 +1,13 @@
 package com.monitorapp.services;
 
+import android.app.Notification;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
+import android.os.Build;
 import android.os.IBinder;
 import android.provider.CallLog;
 import android.telephony.TelephonyManager;
@@ -15,6 +17,8 @@ import androidx.annotation.Nullable;
 
 import com.monitorapp.db_utils.DatabaseHelper;
 import com.monitorapp.db_utils.UserIDStore;
+
+import static com.monitorapp.utils.NotificationUtils.myNotification;
 
 public class CallService extends Service {
 
@@ -32,6 +36,11 @@ public class CallService extends Service {
         IntentFilter filter = new IntentFilter();
         filter.addAction(TelephonyManager.ACTION_PHONE_STATE_CHANGED);
         registerReceiver(mCallCallReceiver, filter);
+
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O)
+            startForeground(1, myNotification(getApplicationContext()));
+        else
+            startForeground(1, new Notification());
     }
 
     @Override

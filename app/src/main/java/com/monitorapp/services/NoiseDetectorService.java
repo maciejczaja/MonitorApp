@@ -1,8 +1,10 @@
 package com.monitorapp.services;
 
+import android.app.Notification;
 import android.app.Service;
 import android.content.Intent;
 import android.media.MediaRecorder;
+import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -13,12 +15,24 @@ import java.io.IOException;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 
+import static com.monitorapp.utils.NotificationUtils.myNotification;
+
 public class NoiseDetectorService extends Service {
 
     private MediaRecorder mRecorder = null;
     public static float dbCount = 40; //start value in dB
     Thread tMic;
     DatabaseHelper dbHelper;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O)
+            startForeground(1, myNotification(getApplicationContext()));
+        else
+            startForeground(1, new Notification());
+    }
 
     @Override
     public IBinder onBind(Intent intent) {

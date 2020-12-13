@@ -1,11 +1,13 @@
 package com.monitorapp.services;
 
 import android.app.ActivityManager;
+import android.app.Notification;
 import android.app.Service;
 import android.app.usage.UsageEvents;
 import android.app.usage.UsageStatsManager;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -21,6 +23,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+
+import static com.monitorapp.utils.NotificationUtils.myNotification;
 
 public class ForegroundAppService extends Service {
 
@@ -60,6 +64,11 @@ public class ForegroundAppService extends Service {
         /* TODO: idk? */
         super.onCreate();
         dbHelper = DatabaseHelper.getHelper(getApplicationContext());
+
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O)
+            startForeground(1, myNotification(getApplicationContext()));
+        else
+            startForeground(1, new Notification());
     }
 
     @Override

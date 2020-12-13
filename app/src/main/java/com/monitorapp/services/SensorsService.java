@@ -1,11 +1,13 @@
 package com.monitorapp.services;
 
+import android.app.Notification;
 import android.app.Service;
 import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -15,10 +17,20 @@ import com.monitorapp.db_utils.UserIDStore;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.List;
+import static com.monitorapp.utils.NotificationUtils.myNotification;
 
 public class SensorsService extends Service {
     SensorManager sm = null;
     List list;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O)
+            startForeground(1, myNotification(getApplicationContext()));
+        else
+            startForeground(1, new Notification());
+    }
 
     @Override
     public IBinder onBind(Intent intent) {

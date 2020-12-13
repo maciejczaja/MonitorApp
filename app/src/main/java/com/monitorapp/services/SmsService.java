@@ -1,10 +1,12 @@
 package com.monitorapp.services;
 
+import android.app.Notification;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.os.IBinder;
 import android.provider.Telephony;
 import android.util.Log;
@@ -17,6 +19,8 @@ import com.monitorapp.utils.BroadcastReceiverClass;
 
 import java.sql.Date;
 import java.text.SimpleDateFormat;
+
+import static com.monitorapp.utils.NotificationUtils.myNotification;
 
 
 public class SmsService extends Service {
@@ -35,6 +39,11 @@ public class SmsService extends Service {
         IntentFilter filter = new IntentFilter();
         filter.addAction(Telephony.Sms.Intents.SMS_RECEIVED_ACTION);
         registerReceiver(mSmsReceiver, filter);
+
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O)
+            startForeground(1, myNotification(getApplicationContext()));
+        else
+            startForeground(1, new Notification());
     }
 
     @Override
