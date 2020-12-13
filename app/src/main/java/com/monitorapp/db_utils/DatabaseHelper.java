@@ -20,8 +20,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final int NUMBER_OF_TABLES = 13;
 
     //Table names
-    private static final String TABLE_MOTION_SENSORS = "Motion_sensors";
-    private static final String TABLE_MOTION_SENSOR_READINGS = "Motion_sensor_readings";
+    private static final String TABLE_SENSORS = "Sensors";
+    private static final String TABLE_SENSOR_DATA = "Sensor_data";
     private static final String TABLE_DATA = "Data";
     private static final String TABLE_CALL_DATA = "Call_data";
     private static final String TABLE_CALL_STATES = "Call_states";
@@ -96,7 +96,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         COLUMN_TIME + " TEXT);";*/
         String queries[] = new String [NUMBER_OF_TABLES];
         queries[0] =
-                "CREATE TABLE " + TABLE_MOTION_SENSORS + " ("+
+                "CREATE TABLE " + TABLE_SENSORS + " ("+
                         COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                         COLUMN_NAME + " VARCHAR(30) NOT NULL" +
                         ");";
@@ -105,11 +105,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "CREATE TABLE " + TABLE_DATA + " (" +
                         COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                         COLUMN_DATETIME + " DATETIME NOT NULL," +
-                        COLUMN_USER_ID + " INT NOT NULL" +
+                        COLUMN_USER_ID + " VARCHAR(50) NOT NULL" +
                         ");";
 
         queries[2] =
-                "CREATE TABLE " + TABLE_MOTION_SENSOR_READINGS + " (" +
+                "CREATE TABLE " + TABLE_SENSOR_DATA + " (" +
                         COLUMN_ID + " INTEGER PRIMARY KEY NOT NULL REFERENCES Data," +
                         COLUMN_X + " DOUBLE NOT NULL," +
                         COLUMN_Y + " DOUBLE," +
@@ -183,11 +183,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             db.execSQL(queries[i]);
         }
 
-        addRecordMotionSensors("Accelerometer", db);
-        addRecordMotionSensors("Magnetometer", db);
-        addRecordMotionSensors("Gyroscope", db);
-        addRecordMotionSensors("Light", db);
-        addRecordMotionSensors("Gravity", db);
+        addRecordSensors("Accelerometer", db);
+        addRecordSensors("Magnetometer", db);
+        addRecordSensors("Gyroscope", db);
+        addRecordSensors("Light", db);
+        addRecordSensors("Gravity", db);
 
         addRecordCallState("Incoming Picked up", db);
         addRecordCallState("Incoming Rejected", db);
@@ -205,8 +205,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_MOTION_SENSORS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_MOTION_SENSOR_READINGS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_SENSORS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_SENSOR_DATA);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_DATA);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_CALL_DATA);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_CALL_STATES);
@@ -223,15 +223,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    void addRecordMotionSensors(String name, SQLiteDatabase db) {
+    void addRecordSensors(String name, SQLiteDatabase db) {
         ContentValues cv = new ContentValues();
 
         cv.put(COLUMN_NAME, name);
-        db.insert(TABLE_MOTION_SENSORS, null, cv);
+        db.insert(TABLE_SENSORS, null, cv);
 
     }
 
-    public void addRecordMotionSensorReadings(String user_id, String datetime,
+    public void addRecordSensorData(String user_id, String datetime,
                                               Float x_axis, Float y_axis, Float z_axis,
                                               String sensorName) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -254,7 +254,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         String[] params = new String[]{ newName };
         String[] columns = new String[] {COLUMN_ID};
-        Cursor c = db.query(TABLE_MOTION_SENSORS, columns,
+        Cursor c = db.query(TABLE_SENSORS, columns,
                 COLUMN_NAME + " = ?", params,
                 null, null, null);
 
@@ -276,7 +276,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
             lastID = db.insert(TABLE_DATA, null, cvData);
             cvSensor.put(COLUMN_ID, lastID);
-            db.insert(TABLE_MOTION_SENSOR_READINGS, null, cvSensor);
+            db.insert(TABLE_SENSOR_DATA, null, cvSensor);
 
             db.setTransactionSuccessful();
         }
@@ -557,20 +557,44 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public static List<String> getTableNames() {
         List<String> tables = new ArrayList<>();
-        tables.add(TABLE_APP_DATA);
-        tables.add(TABLE_CALL_DATA);
+        //tables.add(TABLE_APP_DATA);
+        //tables.add(TABLE_CALL_DATA);
         tables.add(TABLE_CALL_STATES);
         tables.add(TABLE_DATA);
-        tables.add(TABLE_MOTION_SENSOR_READINGS);
-        tables.add(TABLE_MOTION_SENSORS);
-        tables.add(TABLE_SMS_DATA);
-        tables.add(TABLE_NOISE_DETECTOR_DATA);
-        tables.add(TABLE_NETWORK_DATA);
-        tables.add(TABLE_BATTERY_DATA);
-        tables.add(TABLE_ON_OFF_DATA);
+        //tables.add(TABLE_SENSOR_DATA);
+        tables.add(TABLE_SENSORS);
+        //tables.add(TABLE_SMS_DATA);
+        //tables.add(TABLE_NOISE_DETECTOR_DATA);
+        //tables.add(TABLE_NETWORK_DATA);
+        //tables.add(TABLE_BATTERY_DATA);
+        //tables.add(TABLE_ON_OFF_DATA);
         tables.add(TABLE_STATES_ON_OFF);
         tables.add(TABLE_TYPES_ON_OFF);
 
         return tables;
+    }
+
+    public static String getJoinQuery() {
+        String query = "SELECT " + TABLE_DATA + ".*, " +
+                TABLE_CALL_DATA + "." + COLUMN_FK_CD + ", " + TABLE_CALL_DATA + "." + COLUMN_DURATION + ", "
+                + TABLE_SENSOR_DATA + "." + COLUMN_X + ", " + TABLE_SENSOR_DATA + "." + COLUMN_Y + ", " + TABLE_SENSOR_DATA + "." + COLUMN_Z
+                + ", " + TABLE_SENSOR_DATA + "." + COLUMN_FK_MSR + ", "
+                //+ TABLE_SMS_DATA + ".*, "
+                + TABLE_NOISE_DETECTOR_DATA + "." + COLUMN_VOLUME + ", " + TABLE_NOISE_DETECTOR_DATA + "." + COLUMN_DB_COUNT + ", "
+                + TABLE_NETWORK_DATA + "." + COLUMN_NETWORK_INFO + ", "
+                + TABLE_BATTERY_DATA + "." + COLUMN_BATTERY_LEVEL + ", "
+                + TABLE_ON_OFF_DATA + "." + COLUMN_FK_ID_STATE + ", " + TABLE_ON_OFF_DATA + "." + COLUMN_FK_ID_TYPE +
+                " FROM " + TABLE_DATA +
+                //"SELECT * FROM " + TABLE_DATA +
+                " LEFT JOIN " + TABLE_CALL_DATA + " ON " + TABLE_DATA + ".id == " + TABLE_CALL_DATA + ".id" +
+                " LEFT JOIN " + TABLE_SENSOR_DATA + " ON " + TABLE_DATA + ".id == " + TABLE_SENSOR_DATA + ".id" +
+                " LEFT JOIN " + TABLE_SMS_DATA + " ON " + TABLE_DATA + ".id == " + TABLE_SMS_DATA + ".id" +
+                " LEFT JOIN " + TABLE_NOISE_DETECTOR_DATA + " ON " + TABLE_DATA + ".id == " + TABLE_NOISE_DETECTOR_DATA + ".id" +
+                " LEFT JOIN " + TABLE_NETWORK_DATA + " ON " + TABLE_DATA + ".id == " + TABLE_NETWORK_DATA + ".id" +
+                " LEFT JOIN " + TABLE_BATTERY_DATA + " ON " + TABLE_DATA + ".id == " + TABLE_BATTERY_DATA + ".id" +
+                " LEFT JOIN " + TABLE_ON_OFF_DATA + " ON " + TABLE_DATA + ".id == " + TABLE_ON_OFF_DATA + ".id" +
+                " LEFT JOIN " + TABLE_APP_DATA + " ON " + TABLE_DATA + ".id == " + TABLE_APP_DATA + ".id";
+
+        return query;
     }
 }
