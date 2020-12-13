@@ -1,18 +1,25 @@
 package com.monitorapp.view;
 
 import android.Manifest;
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.AppOpsManager;
+import android.app.job.JobInfo;
+import android.app.job.JobScheduler;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.os.PowerManager;
 import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -31,13 +38,17 @@ import com.monitorapp.services.AirplaneModeService;
 import com.monitorapp.services.BatteryService;
 import com.monitorapp.services.CallService;
 import com.monitorapp.services.ForegroundAppService;
+import com.monitorapp.services.MonitoringService;
 import com.monitorapp.services.NetworkService;
 import com.monitorapp.services.NoiseDetectorService;
 import com.monitorapp.services.ScreenOnOffService;
 import com.monitorapp.services.SensorsService;
 import com.monitorapp.services.SmsService;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.IOException;
+import java.util.List;
 
 import static com.monitorapp.enums.AppRunState.STATE_CHECK_PERMISSION;
 import static com.monitorapp.enums.AppRunState.STATE_START;
@@ -71,27 +82,27 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
 
-    private SwitchCompat switchSoundLevelMeter;
-    private SwitchCompat switchGyroscope;
-    private SwitchCompat switchAccelerometer;
-    private SwitchCompat switchGravity;
-    private SwitchCompat switchLight;
-    private SwitchCompat switchMagneticField;
-    private SwitchCompat switchScreenOnOff;
-    private SwitchCompat switchSms;
-    private SwitchCompat switchCall;
-    private SwitchCompat switchBattery;
-    private SwitchCompat switchAirplaneMode;
-    private SwitchCompat switchNetwork;
-    private SwitchCompat switchForegroundApp;
+    public static SwitchCompat switchSoundLevelMeter;
+    public static SwitchCompat switchGyroscope;
+    public static SwitchCompat switchAccelerometer;
+    public static SwitchCompat switchGravity;
+    public static SwitchCompat switchLight;
+    public static SwitchCompat switchMagneticField;
+    public static SwitchCompat switchScreenOnOff;
+    public static SwitchCompat switchSms;
+    public static SwitchCompat switchCall;
+    public static SwitchCompat switchBattery;
+    public static SwitchCompat switchAirplaneMode;
+    public static SwitchCompat switchNetwork;
+    public static SwitchCompat switchForegroundApp;
 
-    private EditText editTextDelay;
+    public static EditText editTextDelay;
 
     private Button buttonZip;
-    private Button buttonStartStop;
+    private static Button buttonStartStop;
     private Button buttonSend;
 
-    private boolean buttonStartStopStatus = false;
+    private static boolean buttonStartStopStatus = false;
 
     public static String PACKAGE_NAME;
 
@@ -108,6 +119,8 @@ public class MainActivity extends AppCompatActivity {
         zipMkdir(this);
 
         initUIComponents();
+        loadUiState(this);
+        Log.d(TAG, "editTextDelay: " + editTextDelay.toString());
     }
 
     @Override
@@ -170,10 +183,35 @@ public class MainActivity extends AppCompatActivity {
         buttonStartStop = findViewById(R.id.Button_start_stop);
         buttonStartStop.setText(R.string.button_start);
         buttonStartStop.setOnClickListener(view -> {
-            if (!buttonStartStopStatus)
-                action(STATE_START);
-            else
-                action(STATE_STOP);
+            if (!buttonStartStopStatus) {
+                //startService(new Intent(getApplicationContext(), MonitoringService.class).putExtra("monitoringType", "START"));
+                JobScheduler jobScheduler = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
+                PersistableBundle bundle = new PersistableBundle();
+                bundle.putString("monitoringType", "START");
+
+                JobInfo jobInfo = new JobInfo.Builder(11, new ComponentName(this, MonitoringService.class))
+                        .setExtras(bundle)
+                        .setOverrideDeadline(0)
+                        .build();
+
+                jobScheduler.schedule(jobInfo);
+            } else {
+                if (isMyServiceRunning(MonitoringService.class)) {
+                    stopService(new Intent(this, MonitoringService.class));
+                }
+                //startService(new Intent(getApplicationContext(), MonitoringService.class).putExtra("monitoringType", "STOP"));
+                JobScheduler jobScheduler = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
+                PersistableBundle bundle = new PersistableBundle();
+                bundle.putString("monitoringType", "STOP");
+
+                JobInfo jobInfo = new JobInfo.Builder(11, new ComponentName(this, MonitoringService.class))
+                        .setExtras(bundle)
+                        .setOverrideDeadline(0)
+                        .build();
+
+                jobScheduler.schedule(jobInfo);
+            }
+            changeButtonText();
         });
 
         buttonSend = findViewById(R.id.Button_send);
@@ -182,7 +220,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
-    private void batteryOptimizations(Context context){
+    private void batteryOptimizations(Context context) {
         Intent intent = new Intent();
         String packageName = getPackageName();
         PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
@@ -190,14 +228,25 @@ public class MainActivity extends AppCompatActivity {
             intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
             intent.setData(Uri.parse("package:" + packageName));
             startActivity(intent);
-    }}
+        }
+    }
 
     private void requestPermissions() {
 
         if (!hasSensorPermissions(PERMISSIONS)) {
             ActivityCompat.requestPermissions(this, PERMISSIONS, REQUEST_CODE_PERMISSIONS_ALL);
         } else {
-            action(STATE_CHECK_PERMISSION);
+            //startService(new Intent(getApplicationContext(), MonitoringService.class).putExtra("monitoringType", "CHECK"));
+            JobScheduler jobScheduler = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
+            PersistableBundle bundle = new PersistableBundle();
+            bundle.putString("monitoringType", "CHECK");
+
+            JobInfo jobInfo = new JobInfo.Builder(11, new ComponentName(this, MonitoringService.class))
+                    .setExtras(bundle)
+                    .setOverrideDeadline(0)
+                    .build();
+
+            jobScheduler.schedule(jobInfo);
         }
 
         if (!hasUsageStatsPermission()) {
@@ -233,8 +282,19 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == REQUEST_CODE_PERMISSIONS_ALL)
-            action(STATE_CHECK_PERMISSION);
+        if (requestCode == REQUEST_CODE_PERMISSIONS_ALL) {
+            //startService(new Intent(getApplicationContext(), MonitoringService.class).putExtra("monitoringType", "CHECK"));
+            JobScheduler jobScheduler = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
+            PersistableBundle bundle = new PersistableBundle();
+            bundle.putString("monitoringType", "CHECK");
+
+            JobInfo jobInfo = new JobInfo.Builder(11, new ComponentName(this, MonitoringService.class))
+                    .setExtras(bundle)
+                    .setOverrideDeadline(0)
+                    .build();
+
+            jobScheduler.schedule(jobInfo);
+        }
     }
 
     public void changeButtonText() {
@@ -283,219 +343,74 @@ public class MainActivity extends AppCompatActivity {
         return false;
     }
 
-    public void action(AppRunState state) {
+    @Override
+    protected void onPause() {
+        super.onPause();
+        saveUiState(this);
+    }
 
-        DatabaseHelper dbHelper = new DatabaseHelper(this);
+    public static void saveUiState(@NotNull Context context) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences(PACKAGE_NAME, MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
 
-        if (state != STATE_CHECK_PERMISSION)
-            changeButtonText();
+        editor.putBoolean("switchSoundLevelMeter", switchSoundLevelMeter.isChecked());
+        editor.putBoolean("switchGyroscope", switchGyroscope.isChecked());
+        editor.putBoolean("switchAccelerometer", switchAccelerometer.isChecked());
+        editor.putBoolean("switchGravity", switchGravity.isChecked());
+        editor.putBoolean("switchLight", switchLight.isChecked());
+        editor.putBoolean("switchMagneticField", switchMagneticField.isChecked());
+        editor.putBoolean("switchScreenOnOff", switchScreenOnOff.isChecked());
+        editor.putBoolean("switchSms", switchSms.isChecked());
+        editor.putBoolean("switchCall", switchCall.isChecked());
+        editor.putBoolean("switchBattery", switchBattery.isChecked());
+        editor.putBoolean("switchAirplaneMode", switchAirplaneMode.isChecked());
+        editor.putBoolean("switchNetwork", switchNetwork.isChecked());
+        editor.putBoolean("switchForegroundApp", switchForegroundApp.isChecked());
+        editor.putString("editTextDelay", editTextDelay.getText().toString());
+        editor.putString("buttonStartStop", buttonStartStop.getText().toString());
+        editor.putBoolean("buttonStartStopStatus", buttonStartStopStatus);
+        editor.apply();
+    }
 
-        /* SOUND LEVEL */
-        if (state == STATE_CHECK_PERMISSION) {
-            if (!hasSensorPermissions(new String[]{android.Manifest.permission.RECORD_AUDIO}))
-                switchSoundLevelMeter.setEnabled(false);
-            else
-                switchSoundLevelMeter.setEnabled(true);
-        } else if (state == STATE_START) {
-            if (switchSoundLevelMeter.isChecked())
-                startService(new Intent(getApplicationContext(), NoiseDetectorService.class));
-            switchSoundLevelMeter.setClickable(false);
+    public static void loadUiState(@NotNull Context context) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences(PACKAGE_NAME, MODE_PRIVATE);
+        switchSoundLevelMeter.setChecked(sharedPreferences.getBoolean("switchSoundLevelMeter", false));
+        switchGyroscope.setChecked(sharedPreferences.getBoolean("switchGyroscope", false));
+        switchAccelerometer.setChecked(sharedPreferences.getBoolean("switchAccelerometer", false));
+        switchGravity.setChecked(sharedPreferences.getBoolean("switchGravity", false));
+        switchLight.setChecked(sharedPreferences.getBoolean("switchLight", false));
+        switchMagneticField.setChecked(sharedPreferences.getBoolean("switchMagneticField", false));
+        switchScreenOnOff.setChecked(sharedPreferences.getBoolean("switchScreenOnOff", false));
+        switchSms.setChecked(sharedPreferences.getBoolean("switchSms", false));
+        switchCall.setChecked(sharedPreferences.getBoolean("switchCall", false));
+        switchBattery.setChecked(sharedPreferences.getBoolean("switchBattery", false));
+        switchAirplaneMode.setChecked(sharedPreferences.getBoolean("switchAirplaneMode", false));
+        switchNetwork.setChecked(sharedPreferences.getBoolean("switchNetwork", false));
+        switchForegroundApp.setChecked(sharedPreferences.getBoolean("switchForegroundApp", false));
+        editTextDelay.setText(sharedPreferences.getString("editTextDelay", ""));
+        buttonStartStop.setText(sharedPreferences.getString("buttonStartStop", "START"));
+        buttonStartStopStatus = sharedPreferences.getBoolean("buttonStartStopStatus", false);
+    }
 
-        } else if (state == STATE_STOP) {
-            if (switchSoundLevelMeter.isChecked())
-                stopService(new Intent(getApplicationContext(), NoiseDetectorService.class));
-            switchSoundLevelMeter.setClickable(true);
+    public static boolean isAppRunning(@NotNull Context context) {
+        ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+
+        List<ActivityManager.RunningTaskInfo> tasks = activityManager.getRunningTasks(Integer.MAX_VALUE);
+
+        for (ActivityManager.RunningTaskInfo task : tasks) {
+            if (context.getPackageName().equalsIgnoreCase(task.baseActivity.getPackageName()))
+                return true;
         }
+        return false;
+    }
 
-        /* GYROSCOPE */
-        if (state == STATE_START) {
-            if (switchGyroscope.isChecked()) {
-                startService(new Intent(getApplicationContext(), SensorsService.class).putExtra("SENSOR_TYPE", TYPE_GYROSCOPE.getValue()));
-                switchGyroscope.setClickable(false);
-            }
-        } else if (state == STATE_STOP) {
-            if (switchGyroscope.isChecked())
-                stopService(new Intent(getApplicationContext(), SensorsService.class).putExtra("SENSOR_TYPE", TYPE_GYROSCOPE.getValue()));
-            switchGyroscope.setClickable(true);
-        }
-
-        /* ACCELEROMETER */
-        if (state == STATE_START) {
-            if (switchAccelerometer.isChecked())
-                startService(new Intent(getApplicationContext(), SensorsService.class).putExtra("SENSOR_TYPE", TYPE_ACCELEROMETER.getValue()));
-            switchAccelerometer.setClickable(false);
-
-        } else if (state == STATE_STOP) {
-            if (switchAccelerometer.isChecked())
-                stopService(new Intent(getApplicationContext(), SensorsService.class).putExtra("SENSOR_TYPE", TYPE_ACCELEROMETER.getValue()));
-            switchAccelerometer.setClickable(true);
-        }
-
-        /* GRAVITY */
-        if (state == STATE_START) {
-            if (switchGravity.isChecked())
-                startService(new Intent(getApplicationContext(), SensorsService.class).putExtra("SENSOR_TYPE", TYPE_GRAVITY.getValue()));
-            switchGravity.setClickable(false);
-
-        } else if (state == STATE_STOP) {
-            if (switchGravity.isChecked())
-                stopService(new Intent(getApplicationContext(), SensorsService.class).putExtra("SENSOR_TYPE", TYPE_GRAVITY.getValue()));
-            switchGravity.setClickable(true);
-        }
-
-        /* LIGHT METER */
-        if (state == STATE_START) {
-            if (switchLight.isChecked())
-                startService(new Intent(getApplicationContext(), SensorsService.class).putExtra("SENSOR_TYPE", TYPE_LIGHT.getValue()));
-            switchLight.setClickable(false);
-
-        } else if (state == STATE_STOP) {
-            if (switchLight.isChecked())
-                stopService(new Intent(getApplicationContext(), SensorsService.class).putExtra("SENSOR_TYPE", TYPE_LIGHT.getValue()));
-            switchLight.setClickable(true);
-        }
-
-        /* MAGNETIC FIELD */
-        if (state == STATE_START) {
-            if (switchMagneticField.isChecked())
-                startService(new Intent(getApplicationContext(), SensorsService.class).putExtra("SENSOR_TYPE", TYPE_MAGNETIC_FIELD.getValue()));
-            switchMagneticField.setClickable(false);
-
-        } else if (state == STATE_STOP) {
-            if (switchMagneticField.isChecked())
-                stopService(new Intent(getApplicationContext(), SensorsService.class).putExtra("SENSOR_TYPE", TYPE_MAGNETIC_FIELD.getValue()));
-            switchMagneticField.setClickable(true);
-        }
-
-        /* SCREEN ON/OFF */
-        if (state == STATE_START) {
-            if (switchScreenOnOff.isChecked())
-                startService(new Intent(getApplicationContext(), ScreenOnOffService.class));
-            switchScreenOnOff.setClickable(false);
-
-        } else if (state == STATE_STOP) {
-            if (switchScreenOnOff.isChecked())
-                stopService(new Intent(getApplicationContext(), ScreenOnOffService.class));
-            switchScreenOnOff.setClickable(true);
-        }
-
-        /* SMS */
-        if (state == STATE_CHECK_PERMISSION) {
-            if (!hasSensorPermissions(new String[]{Manifest.permission.RECEIVE_SMS}))
-                switchSms.setEnabled(false);
-            else
-                switchSms.setEnabled(true);
-        } else if (state == STATE_START) {
-            if (switchSms.isChecked())
-                startService(new Intent(getApplicationContext(), SmsService.class));
-            switchSms.setClickable(false);
-
-        } else if (state == STATE_STOP) {
-            if (switchSms.isChecked())
-                stopService(new Intent(getApplicationContext(), SmsService.class));
-            switchSms.setClickable(true);
-        }
-
-        /* CALL */
-        if (state == STATE_CHECK_PERMISSION) {
-            if (!hasSensorPermissions(new String[]{Manifest.permission.RECEIVE_SMS}))
-                switchCall.setEnabled(false);
-            else
-                switchCall.setEnabled(true);
-        } else if (state == STATE_START) {
-            if (switchCall.isChecked())
-                startService(new Intent(getApplicationContext(), CallService.class));
-            switchCall.setClickable(false);
-
-        } else if (state == STATE_STOP) {
-            if (switchCall.isChecked())
-                stopService(new Intent(getApplicationContext(), CallService.class));
-            switchCall.setClickable(true);
-        }
-
-        /* BATTERY */
-        if (state == STATE_START) {
-            if (switchBattery.isChecked())
-                startService(new Intent(getApplicationContext(), BatteryService.class));
-            switchBattery.setClickable(false);
-
-        } else if (state == STATE_STOP) {
-            if (switchBattery.isChecked())
-                stopService(new Intent(getApplicationContext(), BatteryService.class));
-            switchBattery.setClickable(true);
-        }
-
-        /* AIRPLANE MODE */
-        if (state == STATE_START) {
-            if (switchAirplaneMode.isChecked())
-                startService(new Intent(getApplicationContext(), AirplaneModeService.class));
-            switchAirplaneMode.setClickable(false);
-
-        } else if (state == STATE_STOP) {
-            if (switchAirplaneMode.isChecked())
-                stopService(new Intent(getApplicationContext(), AirplaneModeService.class));
-            switchAirplaneMode.setClickable(true);
-        }
-
-        /* NETWORK */
-        if (state == STATE_START) {
-            if (switchNetwork.isChecked())
-                startService(new Intent(getApplicationContext(), NetworkService.class));
-            switchNetwork.setClickable(false);
-
-        } else if (state == STATE_STOP) {
-            if (switchNetwork.isChecked())
-                stopService(new Intent(getApplicationContext(), NetworkService.class));
-            switchNetwork.setClickable(true);
-        }
-
-        /* FOREGROUND APP */
-        if (!hasUsageStatsPermission()) {
-            switchForegroundApp.setEnabled(false);
-        }
-
-        String delayString = editTextDelay.getText().toString();
-
-        if (state == STATE_START) {
-            if (switchForegroundApp.isChecked()) {
-                long delay;
-                if (delayString.isEmpty()) {
-                    Toast.makeText(this, "Empty delay field: app check started with delay default value of 5 seconds.", Toast.LENGTH_LONG).show();
-                    startService(new Intent(getApplicationContext(), ForegroundAppService.class));
-                } else if (delayString.startsWith("-")) {
-                    Toast.makeText(this, "Negative delay specified: app check started with delay default value of 5 seconds.", Toast.LENGTH_LONG).show();
-                    startService(new Intent(getApplicationContext(), ForegroundAppService.class));
-                } else if (delayString.startsWith("+")) {
-                    delay = Long.parseLong(delayString.substring(1));
-                    Toast.makeText(this, "Redundant plus character: app check started with delay value of " + delayString.substring(1) + " seconds.", Toast.LENGTH_LONG).show();
-                    startService(new Intent(getApplicationContext(), ForegroundAppService.class).putExtra("DELAY", delay));
-                } else if (delayString.equals("0") || delayString.equals("00")) {
-                    Toast.makeText(this, "Delay equals zero: app check started with delay default value of 5 seconds.", Toast.LENGTH_LONG).show();
-                    startService(new Intent(getApplicationContext(), ForegroundAppService.class));
-                } else if (delayString.startsWith("0")) {
-                    delay = Long.parseLong(delayString);
-                    Toast.makeText(this, "App check started with delay value of " + delayString.substring(1) + " seconds.", Toast.LENGTH_LONG).show();
-                    startService(new Intent(getApplicationContext(), ForegroundAppService.class).putExtra("DELAY", delay));
-                } else {
-                    delay = Long.parseLong(delayString);
-                    Toast.makeText(this, "App check started with delay value of " + delayString + " seconds.", Toast.LENGTH_LONG).show();
-                    startService(new Intent(getApplicationContext(), ForegroundAppService.class).putExtra("DELAY", delay));
-                }
-            }
-            switchForegroundApp.setClickable(false);
-        } else if (state == STATE_STOP) {
-            if (switchForegroundApp.isChecked())
-                stopService(new Intent(getApplicationContext(), ForegroundAppService.class));
-            switchForegroundApp.setClickable(true);
-        }
-
-        if (state == STATE_STOP) {
-            try {
-                Intent intent = new Intent(this, SQLExporter.class);
-                startService(intent);
-            } catch (Exception e) {
-                e.printStackTrace();
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
             }
         }
+        return false;
     }
 }
