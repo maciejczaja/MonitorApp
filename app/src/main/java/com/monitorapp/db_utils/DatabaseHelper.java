@@ -575,7 +575,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public static String getJoinQuery() {
-        String query = "SELECT " + TABLE_DATA + ".*, " +
+        String query = "SELECT d." + COLUMN_ID + ", d." + COLUMN_DATETIME + ", d." + COLUMN_USER_ID + ", d." + COLUMN_DURATION + ", d."
+                + COLUMN_X + ", d." + COLUMN_Y + ", d." + COLUMN_Z + ", d." + COLUMN_VOLUME + ", d." + COLUMN_DB_COUNT + ", d."
+                + COLUMN_NETWORK_INFO + ", d." + COLUMN_BATTERY_LEVEL + ", d." + COLUMN_PACKAGE + ", "
+                + TABLE_SENSORS + "." + COLUMN_NAME + " AS Sensor_name, "
+                + TABLE_CALL_STATES + "." + COLUMN_NAME + " AS Call_state, "
+                + TABLE_TYPES_ON_OFF + "." + COLUMN_NAME + " AS On_off_type, "
+                + TABLE_STATES_ON_OFF + "." + COLUMN_NAME + " AS On_off_state" +
+                " FROM " +
+                "(SELECT " + TABLE_DATA + ".*, " +
                 TABLE_CALL_DATA + "." + COLUMN_FK_CD + ", " + TABLE_CALL_DATA + "." + COLUMN_DURATION + ", "
                 + TABLE_SENSOR_DATA + "." + COLUMN_X + ", " + TABLE_SENSOR_DATA + "." + COLUMN_Y + ", " + TABLE_SENSOR_DATA + "." + COLUMN_Z
                 + ", " + TABLE_SENSOR_DATA + "." + COLUMN_FK_MSR + ", "
@@ -583,9 +591,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + TABLE_NOISE_DETECTOR_DATA + "." + COLUMN_VOLUME + ", " + TABLE_NOISE_DETECTOR_DATA + "." + COLUMN_DB_COUNT + ", "
                 + TABLE_NETWORK_DATA + "." + COLUMN_NETWORK_INFO + ", "
                 + TABLE_BATTERY_DATA + "." + COLUMN_BATTERY_LEVEL + ", "
-                + TABLE_ON_OFF_DATA + "." + COLUMN_FK_ID_STATE + ", " + TABLE_ON_OFF_DATA + "." + COLUMN_FK_ID_TYPE +
+                + TABLE_ON_OFF_DATA + "." + COLUMN_FK_ID_STATE + ", " + TABLE_ON_OFF_DATA + "." + COLUMN_FK_ID_TYPE + ", "
+                + TABLE_APP_DATA + "." + COLUMN_PACKAGE +
                 " FROM " + TABLE_DATA +
-                //"SELECT * FROM " + TABLE_DATA +
                 " LEFT JOIN " + TABLE_CALL_DATA + " ON " + TABLE_DATA + ".id == " + TABLE_CALL_DATA + ".id" +
                 " LEFT JOIN " + TABLE_SENSOR_DATA + " ON " + TABLE_DATA + ".id == " + TABLE_SENSOR_DATA + ".id" +
                 " LEFT JOIN " + TABLE_SMS_DATA + " ON " + TABLE_DATA + ".id == " + TABLE_SMS_DATA + ".id" +
@@ -593,8 +601,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 " LEFT JOIN " + TABLE_NETWORK_DATA + " ON " + TABLE_DATA + ".id == " + TABLE_NETWORK_DATA + ".id" +
                 " LEFT JOIN " + TABLE_BATTERY_DATA + " ON " + TABLE_DATA + ".id == " + TABLE_BATTERY_DATA + ".id" +
                 " LEFT JOIN " + TABLE_ON_OFF_DATA + " ON " + TABLE_DATA + ".id == " + TABLE_ON_OFF_DATA + ".id" +
-                " LEFT JOIN " + TABLE_APP_DATA + " ON " + TABLE_DATA + ".id == " + TABLE_APP_DATA + ".id";
+                " LEFT JOIN " + TABLE_APP_DATA + " ON " + TABLE_DATA + ".id == " + TABLE_APP_DATA + ".id)" +
+                " AS d" +
+                " LEFT JOIN " + TABLE_SENSORS + " ON d." + COLUMN_FK_MSR + " == " + TABLE_SENSORS + "." + COLUMN_ID +
+                " LEFT JOIN " + TABLE_CALL_STATES + " ON d." + COLUMN_FK_CD + " == " + TABLE_CALL_STATES + "." + COLUMN_ID +
+                " LEFT JOIN " + TABLE_STATES_ON_OFF + " ON d." + COLUMN_FK_ID_STATE + " == " + TABLE_STATES_ON_OFF + "." + COLUMN_ID +
+                " LEFT JOIN " + TABLE_TYPES_ON_OFF + " ON d." + COLUMN_FK_ID_TYPE + " == " + TABLE_TYPES_ON_OFF + "." + COLUMN_ID;
 
+        //" LEFT JOIN " + TABLE_SENSORS + " ON " + TABLE_SENSOR_DATA + "." + COLUMN_FK_MSR + " == " + TABLE_SENSORS + "." + COLUMN_ID +
+        //" LEFT JOIN " + TABLE_CALL_STATES + " ON " + TABLE_CALL_DATA + "." + COLUMN_FK_CD + " == " + TABLE_CALL_STATES + "." + COLUMN_ID +
+        //" LEFT JOIN " + TABLE_STATES_ON_OFF + " ON " + TABLE_ON_OFF_DATA + "." + COLUMN_FK_ID_STATE + " == " + TABLE_STATES_ON_OFF + "." + COLUMN_ID +
+        //" LEFT JOIN " + TABLE_TYPES_ON_OFF + " ON " + TABLE_ON_OFF_DATA + "." + COLUMN_FK_ID_TYPE + " == " + TABLE_TYPES_ON_OFF + "." + COLUMN_ID;
         return query;
     }
 }
