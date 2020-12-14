@@ -48,7 +48,7 @@ public class ZipUtils {
             return zipFile;
         };
 
-        getPasswordFromDialog(context, cZipFile);
+        getPasswordFromDialog(activity, context, cZipFile);
     }
 
     private static File zipWithPassword(@NotNull final Activity activity, final String file, final char[] password) throws ZipException {
@@ -82,7 +82,7 @@ public class ZipUtils {
         return zipFile.getFile();
     }
 
-    public static void getPasswordFromDialog(Context context, final Callable<File> zipFunction) {
+    public static void getPasswordFromDialog(Activity activity, Context context, final Callable<File> zipFunction) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("Type in your password:");
         final EditText input = new EditText(context);
@@ -97,7 +97,10 @@ public class ZipUtils {
                 e.printStackTrace();
             }
         });
-        builder.setNegativeButton(android.R.string.cancel, (dialogInterface, i) -> dialogInterface.cancel());
+        builder.setNegativeButton(android.R.string.cancel, (dialogInterface, i) -> {
+            dialogInterface.cancel();
+            activity.finish();
+        });
         builder.show();
     }
 }

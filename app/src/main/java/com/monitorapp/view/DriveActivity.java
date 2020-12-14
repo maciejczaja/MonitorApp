@@ -16,6 +16,7 @@ import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccoun
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
+import com.monitorapp.R;
 import com.monitorapp.utils.DriveUtils;
 
 import java.util.Collections;
@@ -40,6 +41,7 @@ public class DriveActivity extends Activity {
         GoogleSignInOptions googleSignInOptions = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
                 .requestScopes(new Scope(DriveScopes.DRIVE_FILE))
+                .requestIdToken(getString(R.string.oauth_client_id))
                 .build();
 
         GoogleSignInClient googleSignInClient = GoogleSignIn.getClient(this, googleSignInOptions);

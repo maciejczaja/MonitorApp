@@ -48,6 +48,7 @@
         <activity
             android:name=".view.DriveActivity"
             android:parentActivityName=".view.DriveActivity"
+            android:launchMode="singleTop"
             />
         <activity
             android:name=".view.FileUploadActivity"
