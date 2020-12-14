@@ -4,9 +4,6 @@ import android.Manifest;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.AppOpsManager;
-import android.app.job.JobInfo;
-import android.app.job.JobScheduler;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -14,7 +11,6 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.os.PowerManager;
 import android.provider.Settings;
 import android.text.Editable;
@@ -22,7 +18,6 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
@@ -30,34 +25,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.app.ActivityCompat;
 
-import com.monitorapp.db_utils.DatabaseHelper;
 import com.monitorapp.R;
-import com.monitorapp.db_utils.SQLExporter;
-import com.monitorapp.enums.AppRunState;
-import com.monitorapp.services.AirplaneModeService;
-import com.monitorapp.services.BatteryService;
-import com.monitorapp.services.CallService;
-import com.monitorapp.services.ForegroundAppService;
-import com.monitorapp.services.MonitoringService;
-import com.monitorapp.services.NetworkService;
-import com.monitorapp.services.NoiseDetectorService;
-import com.monitorapp.services.ScreenOnOffService;
-import com.monitorapp.services.SensorsService;
-import com.monitorapp.services.SmsService;
+import com.monitorapp.services.MonitoringNotificationService;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.util.List;
 
-import static com.monitorapp.enums.AppRunState.STATE_CHECK_PERMISSION;
-import static com.monitorapp.enums.AppRunState.STATE_START;
-import static com.monitorapp.enums.AppRunState.STATE_STOP;
-import static com.monitorapp.enums.SensorType.TYPE_ACCELEROMETER;
-import static com.monitorapp.enums.SensorType.TYPE_GRAVITY;
-import static com.monitorapp.enums.SensorType.TYPE_GYROSCOPE;
-import static com.monitorapp.enums.SensorType.TYPE_LIGHT;
-import static com.monitorapp.enums.SensorType.TYPE_MAGNETIC_FIELD;
+import static com.monitorapp.services.MonitoringNotificationService.ACTION_START_SERVICE;
+import static com.monitorapp.services.MonitoringNotificationService.ACTION_STOP_SERVICE;
 import static com.monitorapp.utils.StorageUtils.csvMkdir;
 import static com.monitorapp.utils.StorageUtils.getExternalStoragePath;
 import static com.monitorapp.utils.StorageUtils.isCsvStorageReadable;
@@ -184,32 +160,39 @@ public class MainActivity extends AppCompatActivity {
         buttonStartStop.setText(R.string.button_start);
         buttonStartStop.setOnClickListener(view -> {
             if (!buttonStartStopStatus) {
+
+                saveUiState(this);
+
                 //startService(new Intent(getApplicationContext(), MonitoringService.class).putExtra("monitoringType", "START"));
-                JobScheduler jobScheduler = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
-                PersistableBundle bundle = new PersistableBundle();
-                bundle.putString("monitoringType", "START");
+//                JobScheduler jobScheduler = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
+//                PersistableBundle bundle = new PersistableBundle();
+//                bundle.putString("monitoringType", "START");
+//
+//                JobInfo jobInfo = new JobInfo.Builder(11, new ComponentName(this, MonitoringService.class))
+//                        .setExtras(bundle)
+//                        .setOverrideDeadline(0)
+//                        .build();
+//
+//                jobScheduler.schedule(jobInfo);
+                Intent startIntent = new Intent(getApplicationContext(), MonitoringNotificationService.class);
+                startIntent.setAction(ACTION_START_SERVICE);
+                startService(startIntent);
 
-                JobInfo jobInfo = new JobInfo.Builder(11, new ComponentName(this, MonitoringService.class))
-                        .setExtras(bundle)
-                        .setOverrideDeadline(0)
-                        .build();
-
-                jobScheduler.schedule(jobInfo);
             } else {
-                if (isMyServiceRunning(MonitoringService.class)) {
-                    stopService(new Intent(this, MonitoringService.class));
-                }
+                Intent stopIntent = new Intent(getApplicationContext(), MonitoringNotificationService.class);
+                stopIntent.setAction(ACTION_STOP_SERVICE);
+                startService(stopIntent);
                 //startService(new Intent(getApplicationContext(), MonitoringService.class).putExtra("monitoringType", "STOP"));
-                JobScheduler jobScheduler = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
-                PersistableBundle bundle = new PersistableBundle();
-                bundle.putString("monitoringType", "STOP");
-
-                JobInfo jobInfo = new JobInfo.Builder(11, new ComponentName(this, MonitoringService.class))
-                        .setExtras(bundle)
-                        .setOverrideDeadline(0)
-                        .build();
-
-                jobScheduler.schedule(jobInfo);
+//                JobScheduler jobScheduler = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
+//                PersistableBundle bundle = new PersistableBundle();
+//                bundle.putString("monitoringType", "STOP");
+//
+//                JobInfo jobInfo = new JobInfo.Builder(11, new ComponentName(this, MonitoringService.class))
+//                        .setExtras(bundle)
+//                        .setOverrideDeadline(0)
+//                        .build();
+//
+//                jobScheduler.schedule(jobInfo);
             }
             changeButtonText();
         });
@@ -237,16 +220,17 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, PERMISSIONS, REQUEST_CODE_PERMISSIONS_ALL);
         } else {
             //startService(new Intent(getApplicationContext(), MonitoringService.class).putExtra("monitoringType", "CHECK"));
-            JobScheduler jobScheduler = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
-            PersistableBundle bundle = new PersistableBundle();
-            bundle.putString("monitoringType", "CHECK");
-
-            JobInfo jobInfo = new JobInfo.Builder(11, new ComponentName(this, MonitoringService.class))
-                    .setExtras(bundle)
-                    .setOverrideDeadline(0)
-                    .build();
-
-            jobScheduler.schedule(jobInfo);
+//            JobScheduler jobScheduler = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
+//            PersistableBundle bundle = new PersistableBundle();
+//            bundle.putString("monitoringType", "CHECK");
+//
+//            JobInfo jobInfo = new JobInfo.Builder(11, new ComponentName(this, MonitoringService.class))
+//                    .setExtras(bundle)
+//                    .setOverrideDeadline(0)
+//                    .build();
+//
+//            jobScheduler.schedule(jobInfo);
+            checkMonitoringPermissions();
         }
 
         if (!hasUsageStatsPermission()) {
@@ -284,16 +268,17 @@ public class MainActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == REQUEST_CODE_PERMISSIONS_ALL) {
             //startService(new Intent(getApplicationContext(), MonitoringService.class).putExtra("monitoringType", "CHECK"));
-            JobScheduler jobScheduler = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
-            PersistableBundle bundle = new PersistableBundle();
-            bundle.putString("monitoringType", "CHECK");
-
-            JobInfo jobInfo = new JobInfo.Builder(11, new ComponentName(this, MonitoringService.class))
-                    .setExtras(bundle)
-                    .setOverrideDeadline(0)
-                    .build();
-
-            jobScheduler.schedule(jobInfo);
+//            JobScheduler jobScheduler = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
+//            PersistableBundle bundle = new PersistableBundle();
+//            bundle.putString("monitoringType", "CHECK");
+//
+//            JobInfo jobInfo = new JobInfo.Builder(11, new ComponentName(this, MonitoringService.class))
+//                    .setExtras(bundle)
+//                    .setOverrideDeadline(0)
+//                    .build();
+//
+//            jobScheduler.schedule(jobInfo);
+            checkMonitoringPermissions();
         }
     }
 
@@ -404,13 +389,28 @@ public class MainActivity extends AppCompatActivity {
         return false;
     }
 
-    private boolean isMyServiceRunning(Class<?> serviceClass) {
-        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (serviceClass.getName().equals(service.service.getClassName())) {
-                return true;
-            }
+    private void checkMonitoringPermissions() {
+        Log.d(TAG, ": onMonitoringPermissionsCheck");
+
+        /* SOUND LEVEL */
+        if (!hasSensorPermissions(new String[]{android.Manifest.permission.RECORD_AUDIO})) {
+            switchSoundLevelMeter.setEnabled(false);
+        } else {
+            switchSoundLevelMeter.setEnabled(true);
         }
-        return false;
+
+        /* SMS */
+        if (!hasSensorPermissions(new String[]{Manifest.permission.RECEIVE_SMS})) {
+            switchSms.setEnabled(false);
+        } else {
+            switchSms.setEnabled(true);
+        }
+
+        /* CALL */
+        if (!hasSensorPermissions(new String[]{Manifest.permission.RECEIVE_SMS})) {
+            switchCall.setEnabled(false);
+        } else {
+            switchCall.setEnabled(true);
+        }
     }
 }

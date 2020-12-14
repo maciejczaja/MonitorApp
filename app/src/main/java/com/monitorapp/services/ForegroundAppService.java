@@ -31,7 +31,6 @@ public class ForegroundAppService extends Service {
     private Thread foregroundAppServiceThread = new Thread(() -> {
         while (true) {
             try {
-//                final String foregroundProcessName = getForegroundProcessName();
                 final String foregroundProcessName = getForegroundProcessName();
                 Date currentDateTime = Calendar.getInstance().getTime();
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
@@ -55,21 +54,18 @@ public class ForegroundAppService extends Service {
     @Override
     public void onCreate() {
         /* TODO: idk? */
+        Log.d(TAG, ": created");
         super.onCreate();
         dbHelper = DatabaseHelper.getHelper(getApplicationContext());
     }
 
     @Override
     public int onStartCommand(@NotNull Intent intent, int flags, int startId) {
-        if (isAppRunning(this)) {
-            delay = intent.getLongExtra("DELAY", 5);
-        } else {
-            SharedPreferences sharedPreferences = getSharedPreferences(PACKAGE_NAME, MODE_PRIVATE);
-            String delayStringTemp = sharedPreferences.getString("editTextDelay", "");
-            delay = Long.parseLong(delayStringTemp);
-        }
+        delay = intent.getLongExtra("DELAY", 5);
         delay *= 1000; //to milliseconds
+
         foregroundAppServiceThread.start();
+        Log.d(TAG, ": thread started");
 
         /* restart Service with null passed when terminated by OS */
         return Service.START_STICKY;
@@ -79,6 +75,7 @@ public class ForegroundAppService extends Service {
     public void onDestroy() {
         foregroundAppServiceThread.interrupt();
         super.onDestroy();
+        Log.d(TAG, ": destroyed, thread interrupted");
     }
 
     private String getForegroundProcessName() {
