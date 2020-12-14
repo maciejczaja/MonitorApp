@@ -380,10 +380,8 @@ public class MainActivity extends AppCompatActivity {
     public static boolean isAppRunning(@NotNull Context context) {
         ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
 
-        List<ActivityManager.RunningTaskInfo> tasks = activityManager.getRunningTasks(Integer.MAX_VALUE);
-
-        for (ActivityManager.RunningTaskInfo task : tasks) {
-            if (context.getPackageName().equalsIgnoreCase(task.baseActivity.getPackageName()))
+        for (ActivityManager.RunningServiceInfo task : activityManager.getRunningServices(Integer.MAX_VALUE)) {
+            if (context.getPackageName().equalsIgnoreCase(task.service.getPackageName()))
                 return true;
         }
         return false;

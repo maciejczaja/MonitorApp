@@ -38,7 +38,6 @@ public class NoiseDetectorService extends Service {
                 mRecorder.start();
 
             } catch (IOException exception) {
-                stop();
                 exception.printStackTrace();
             }
 
@@ -47,6 +46,9 @@ public class NoiseDetectorService extends Service {
 
                     while (true) {
                         try {
+                            if (Thread.interrupted()) {
+                                break;
+                            }
                             int volume = mRecorder.getMaxAmplitude();
                             if (volume > 0)
                                 dbCount = 20 * (float) (Math.log10(volume));
@@ -58,7 +60,10 @@ public class NoiseDetectorService extends Service {
                                     .valueOf(dbCount));
                             dbHelper.addRecordNoiseDetectorData(sdf.format(date), UserIDStore.id(getApplicationContext()), volume, dbCount);
 
-                            Thread.sleep(1000);
+                            if (!Thread.interrupted()) {
+                                Thread.sleep(1000);
+                            }
+
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                             Thread.currentThread().interrupt();
@@ -73,19 +78,16 @@ public class NoiseDetectorService extends Service {
         return START_STICKY;
     }
 
-    public void stop() {
+    @Override
+    public void onDestroy() {
         tMic.interrupt();
+
         if (mRecorder != null) {
             mRecorder.stop();
             mRecorder.reset();
             mRecorder.release();
             mRecorder = null;
         }
-    }
-
-    @Override
-    public void onDestroy() {
-        stop();
         super.onDestroy();
     }
 }
