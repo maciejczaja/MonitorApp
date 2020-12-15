@@ -60,6 +60,9 @@ dependencies {
     implementation 'com.google.http-client:google-http-client-gson:1.26.0'
 
     implementation platform('com.google.firebase:firebase-bom:26.1.1')
+    implementation 'com.google.firebase:firebase-analytics'
+    implementation 'com.google.firebase:firebase-auth'
+
 }
 
 apply plugin: 'com.android.application'

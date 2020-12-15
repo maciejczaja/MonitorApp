@@ -38,9 +38,12 @@ public class DriveActivity extends Activity {
     }
 
     private void requestGoogleSignIn() {
+//        GoogleSignInOptions googleSignInOptions = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+//                .requestEmail()
+//                .requestScopes(new Scope(DriveScopes.DRIVE_FILE))
+//                .requestIdToken(getString(R.string.oauth_client_id))
+//                .build();
         GoogleSignInOptions googleSignInOptions = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestEmail()
-                .requestScopes(new Scope(DriveScopes.DRIVE_FILE))
                 .requestIdToken(getString(R.string.oauth_client_id))
                 .build();
 
@@ -51,6 +54,7 @@ public class DriveActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        Log.d(TAG, ": result code = " + resultCode);
         if (requestCode == REQUEST_CODE_SIGN_IN_INTENT && resultCode == RESULT_OK) {
             handleSignInIntent(data);
             startActivity(new Intent(this, FileUploadActivity.class));
