@@ -4,10 +4,12 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.Scope;
@@ -44,6 +46,7 @@ public class DriveActivity extends Activity {
 //                .requestIdToken(getString(R.string.oauth_client_id))
 //                .build();
         GoogleSignInOptions googleSignInOptions = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
                 .requestIdToken(getString(R.string.oauth_client_id))
                 .build();
 
@@ -58,6 +61,8 @@ public class DriveActivity extends Activity {
         if (requestCode == REQUEST_CODE_SIGN_IN_INTENT && resultCode == RESULT_OK) {
             handleSignInIntent(data);
             startActivity(new Intent(this, FileUploadActivity.class));
+        } else if (requestCode == REQUEST_CODE_SIGN_IN_INTENT && resultCode == RESULT_CANCELED) {
+            runOnUiThread(() -> Toast.makeText(DriveActivity.this, "Failed to connect with Google services.", Toast.LENGTH_LONG).show());
         }
     }
 
