@@ -120,9 +120,8 @@ public class MonitoringNotificationService extends Service {
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O)
             startForeground(NOTIFICATION_ID, new Notification());
-        else
-        {
-            String NOTIFICATION_CHANNEL_ID = "example.permanence";
+        else {
+            String NOTIFICATION_CHANNEL_ID = "com.MonitorApp";
             String channelName = "Background Service";
             NotificationChannel chan = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_NONE);
             chan.setLightColor(Color.BLUE);
@@ -139,7 +138,7 @@ public class MonitoringNotificationService extends Service {
                     .setCategory(Notification.CATEGORY_SERVICE)
                     .build();
 
-        startForeground(NOTIFICATION_ID, notification);
+            startForeground(NOTIFICATION_ID, notification);
         }
     }
 
@@ -259,23 +258,23 @@ public class MonitoringNotificationService extends Service {
         if (ifAppMonitoring) {
             if (delayString.isEmpty()) {
 //                Toast.makeText(this, "Empty delay field: app check started with delay default value of 5 seconds.", Toast.LENGTH_LONG).show();
-                startService(new Intent(getApplicationContext(), ForegroundAppService.class));
+                startService(new Intent(getApplicationContext(), ForegroundAppService.class).putExtra("DELAY", 5));
             } else if (delayString.startsWith("-")) {
 //                Toast.makeText(this, "Negative delay specified: app check started with delay default value of 5 seconds.", Toast.LENGTH_LONG).show();
-                startService(new Intent(getApplicationContext(), ForegroundAppService.class));
+                startService(new Intent(getApplicationContext(), ForegroundAppService.class).putExtra("DELAY", 5));
             } else if (delayString.startsWith("+")) {
-//                delay = Long.parseLong(delayString.substring(1));
+                delay = Long.parseLong(delayString.substring(1));
 //                Toast.makeText(this, "Redundant plus character: app check started with delay value of " + delayString.substring(1) + " seconds.", Toast.LENGTH_LONG).show();
                 startService(new Intent(getApplicationContext(), ForegroundAppService.class).putExtra("DELAY", delay));
             } else if (delayString.equals("0") || delayString.equals("00")) {
 //                Toast.makeText(this, "Delay equals zero: app check started with delay default value of 5 seconds.", Toast.LENGTH_LONG).show();
-                startService(new Intent(getApplicationContext(), ForegroundAppService.class));
+                startService(new Intent(getApplicationContext(), ForegroundAppService.class).putExtra("DELAY", 5));
             } else if (delayString.startsWith("0")) {
-//                delay = Long.parseLong(delayString);
+                delay = Long.parseLong(delayString);
 //                Toast.makeText(this, "App check started with delay value of " + delayString.substring(1) + " seconds.", Toast.LENGTH_LONG).show();
                 startService(new Intent(getApplicationContext(), ForegroundAppService.class).putExtra("DELAY", delay));
             } else {
-//                delay = Long.parseLong(delayString);
+                delay = Long.parseLong(delayString);
 //                Toast.makeText(this, "App check started with delay value of " + delayString + " seconds.", Toast.LENGTH_LONG).show();
                 startService(new Intent(getApplicationContext(), ForegroundAppService.class).putExtra("DELAY", delay));
             }
@@ -389,7 +388,7 @@ public class MonitoringNotificationService extends Service {
         }
 
         /* FOREGROUND APP */
-        if (!hasUsageStatsPermission()&&isAppRunning) {
+        if (!hasUsageStatsPermission() && isAppRunning) {
             switchForegroundApp.setEnabled(false);
         }
 
@@ -453,7 +452,7 @@ public class MonitoringNotificationService extends Service {
         ifAirplMonitoring = sharedPreferences.getBoolean("switchAirplaneMode", false);
         ifNetwMonitoring = sharedPreferences.getBoolean("switchNetwork", false);
         ifAppMonitoring = sharedPreferences.getBoolean("switchForegroundApp", false);
-        delay = Long.parseLong((sharedPreferences.getString("editTextDelay", "")));
+        String a = sharedPreferences.getString("editTextDelay", "");
         delayString = sharedPreferences.getString("editTextDelay", "");
     }
 }
