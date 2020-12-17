@@ -9,7 +9,6 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.Scope;
@@ -18,7 +17,6 @@ import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccoun
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
-import com.monitorapp.R;
 import com.monitorapp.utils.DriveUtils;
 
 import java.util.Collections;
@@ -31,6 +29,10 @@ public class DriveActivity extends Activity {
 
     private static DriveUtils driveUtils;
 
+    public static DriveUtils getDriveUtils() {
+        return driveUtils;
+    }
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,14 +42,9 @@ public class DriveActivity extends Activity {
     }
 
     private void requestGoogleSignIn() {
-//        GoogleSignInOptions googleSignInOptions = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-//                .requestEmail()
-//                .requestScopes(new Scope(DriveScopes.DRIVE_FILE))
-//                .requestIdToken(getString(R.string.oauth_client_id))
-//                .build();
         GoogleSignInOptions googleSignInOptions = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
-                .requestIdToken(getString(R.string.oauth_client_id))
+                .requestScopes(new Scope(DriveScopes.DRIVE_FILE))
                 .build();
 
         GoogleSignInClient googleSignInClient = GoogleSignIn.getClient(this, googleSignInOptions);
@@ -66,10 +63,6 @@ public class DriveActivity extends Activity {
         }
     }
 
-
-    /*
-     * TODO: AndroidHttp deprecated?
-     *  */
     private void handleSignInIntent(Intent data) {
         GoogleSignIn.getSignedInAccountFromIntent(data)
                 .addOnSuccessListener(googleSignInAccount -> {
@@ -88,10 +81,6 @@ public class DriveActivity extends Activity {
                 .addOnFailureListener(e -> {
                     this.finish();
                 });
-    }
-
-    public static DriveUtils getDriveUtils() {
-        return driveUtils;
     }
 
     @Override
