@@ -12,8 +12,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.Scope;
-import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
+import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
@@ -71,8 +71,10 @@ public class DriveActivity extends Activity {
 
                     googleAccountCredential.setSelectedAccount(googleSignInAccount.getAccount());
                     Drive googleDriveService = new Drive.Builder(
-                            AndroidHttp.newCompatibleTransport(), new GsonFactory(), googleAccountCredential)
-                            .setApplicationName("Monitor App")
+                            new NetHttpTransport(),
+                            new GsonFactory(),
+                            googleAccountCredential)
+                            .setApplicationName("MonitorApp")
                             .build();
 
                     driveUtils = new DriveUtils(googleDriveService);
