@@ -193,10 +193,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         addRecordSensors("Light", db);
         addRecordSensors("Gravity", db);
 
-        addRecordCallState("Incoming Picked up", db);
-        addRecordCallState("Incoming Rejected", db);
-        addRecordCallState("Incoming Missed", db);
+        addRecordCallState("Incoming", db);
+        addRecordCallState("Missed", db);
+        addRecordCallState("Voicemail", db);
         addRecordCallState("Outgoing", db);
+        addRecordCallState("Rejected", db);
+        addRecordCallState("Blocked", db);
+        addRecordCallState("Answered Externally", db);
 
         addRecordStatesOnOff("On", db);
         addRecordStatesOnOff("Off", db);
@@ -290,18 +293,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    void addRecordData(String datetime, Long user_id) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues cv = new ContentValues();
-
-        cv.put(COLUMN_USER_ID, user_id);
-        cv.put(COLUMN_DATETIME, datetime);
-
-        long result = db.insert(TABLE_DATA, null, cv);
-
-
-    }
-
     public void addRecordCallData(int callStateInt, String userID, String datetime, int duration) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cvCall = new ContentValues();
@@ -311,13 +302,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String callState = "";
 
         if (callStateInt == 1) {
-            callState = "Incoming Picked up";
-        } else if (callStateInt == 3) {
-            callState = "Incoming Missed";
-        } else if (callStateInt == 5) {
-            callState = "Incoming Rejected";
-        } else {
+            callState = "Incoming";
+        } else if (callStateInt == 2) {
             callState = "Outgoing";
+        } else if (callStateInt == 3) {
+            callState = "Missed";
+        } else if (callStateInt == 4) {
+            callState = "Voicemail";
+        } else if (callStateInt == 5) {
+            callState = "Rejected";
+        } else if (callStateInt == 6) {
+            callState = "Blocked";
+        } else if (callStateInt == 7) {
+            callState = "Answered Externally";
         }
 
         String[] params = new String[]{ callState };
@@ -358,7 +355,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         cv.put(COLUMN_NAME, name);
 
-        long result = db.insert(TABLE_CALL_STATES, null, cv);
+        db.insert(TABLE_CALL_STATES, null, cv);
 
     }
 
@@ -565,27 +562,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    //public void addTextMessageData(String datetime, String userID, )
-
-    public static List<String> getTableNames() {
-        List<String> tables = new ArrayList<>();
-        //tables.add(TABLE_APP_DATA);
-        //tables.add(TABLE_CALL_DATA);
-        tables.add(TABLE_CALL_STATES);
-        tables.add(TABLE_DATA);
-        //tables.add(TABLE_SENSOR_DATA);
-        tables.add(TABLE_SENSORS);
-        //tables.add(TABLE_SMS_DATA);
-        //tables.add(TABLE_NOISE_DETECTOR_DATA);
-        //tables.add(TABLE_NETWORK_DATA);
-        //tables.add(TABLE_BATTERY_DATA);
-        //tables.add(TABLE_ON_OFF_DATA);
-        tables.add(TABLE_STATES_ON_OFF);
-        tables.add(TABLE_TYPES_ON_OFF);
-
-        return tables;
-    }
-
     public static String getJoinQuery() {
         String query = "SELECT d." + COLUMN_DATA_TYPE + ", d." + COLUMN_ID + ", d." + COLUMN_DATETIME + ", d." + COLUMN_USER_ID + ", d." + COLUMN_DURATION + ", d."
                 + COLUMN_X + ", d." + COLUMN_Y + ", d." + COLUMN_Z + ", d." + COLUMN_VOLUME + ", d." + COLUMN_DB_COUNT + ", d."
@@ -599,7 +575,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 TABLE_CALL_DATA + "." + COLUMN_FK_CD + ", " + TABLE_CALL_DATA + "." + COLUMN_DURATION + ", "
                 + TABLE_SENSOR_DATA + "." + COLUMN_X + ", " + TABLE_SENSOR_DATA + "." + COLUMN_Y + ", " + TABLE_SENSOR_DATA + "." + COLUMN_Z
                 + ", " + TABLE_SENSOR_DATA + "." + COLUMN_FK_MSR + ", "
-                //+ TABLE_SMS_DATA + ".*, "
                 + TABLE_NOISE_DETECTOR_DATA + "." + COLUMN_VOLUME + ", " + TABLE_NOISE_DETECTOR_DATA + "." + COLUMN_DB_COUNT + ", "
                 + TABLE_NETWORK_DATA + "." + COLUMN_NETWORK_INFO + ", "
                 + TABLE_BATTERY_DATA + "." + COLUMN_BATTERY_LEVEL + ", "
@@ -620,10 +595,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 " LEFT JOIN " + TABLE_STATES_ON_OFF + " ON d." + COLUMN_FK_ID_STATE + " == " + TABLE_STATES_ON_OFF + "." + COLUMN_ID +
                 " LEFT JOIN " + TABLE_TYPES_ON_OFF + " ON d." + COLUMN_FK_ID_TYPE + " == " + TABLE_TYPES_ON_OFF + "." + COLUMN_ID;
 
-        //" LEFT JOIN " + TABLE_SENSORS + " ON " + TABLE_SENSOR_DATA + "." + COLUMN_FK_MSR + " == " + TABLE_SENSORS + "." + COLUMN_ID +
-        //" LEFT JOIN " + TABLE_CALL_STATES + " ON " + TABLE_CALL_DATA + "." + COLUMN_FK_CD + " == " + TABLE_CALL_STATES + "." + COLUMN_ID +
-        //" LEFT JOIN " + TABLE_STATES_ON_OFF + " ON " + TABLE_ON_OFF_DATA + "." + COLUMN_FK_ID_STATE + " == " + TABLE_STATES_ON_OFF + "." + COLUMN_ID +
-        //" LEFT JOIN " + TABLE_TYPES_ON_OFF + " ON " + TABLE_ON_OFF_DATA + "." + COLUMN_FK_ID_TYPE + " == " + TABLE_TYPES_ON_OFF + "." + COLUMN_ID;
         return query;
     }
 }

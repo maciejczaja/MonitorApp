@@ -50,9 +50,8 @@ public class SQLExporter extends Service {
                 } catch (IOException e){
                     e.printStackTrace();
                 }
-                List<String> tables = DatabaseHelper.getTableNames();
                 try {
-                    writeCSV(targetFile, db, tables);
+                    writeCSV(targetFile, db);
                 } catch (Exception e) {
                     e.printStackTrace();
                 } finally {
@@ -94,29 +93,21 @@ public class SQLExporter extends Service {
         writer.writeNext(new String[]{value});
     }
 
-    private static void writeCSV(File file, SQLiteDatabase db, List<String> tables) {
+    private static void writeCSV(File file, SQLiteDatabase db) {
         CSVWriter csvWrite = null;
         Cursor csvCursor = null;
         try {
             csvWrite = new CSVWriter(new FileWriter(file));
-            writeSingleValue(csvWrite, "dbVersion = " + db.getVersion());
-            for (String table: tables) {
-                writeSingleValue(csvWrite, "table=" + table);
-                if (table.equals("Sensors") || table.equals("Call_states") ||
-                        table.equals("States_on_off") || table.equals("Types_on_off")) {
-                    csvCursor = db.rawQuery("SELECT * FROM " + table, null);
-                } else {
-                    csvCursor = db.rawQuery(DatabaseHelper.getJoinQuery(), null);
+            writeSingleValue(csvWrite, "DATA");
+            csvCursor = db.rawQuery(DatabaseHelper.getJoinQuery(), null);
+            csvWrite.writeNext(csvCursor.getColumnNames());
+            while(csvCursor.moveToNext()) {
+                int columns = csvCursor.getColumnCount();
+                String[] columnArr = new String[columns];
+                for (int i = 0; i < columns; i++) {
+                    columnArr[i] = csvCursor.getString(i);
                 }
-                csvWrite.writeNext(csvCursor.getColumnNames());
-                while(csvCursor.moveToNext()) {
-                    int columns = csvCursor.getColumnCount();
-                    String[] columnArr = new String[columns];
-                    for (int i = 0; i < columns; i++) {
-                        columnArr[i] = csvCursor.getString(i);
-                    }
-                    csvWrite.writeNext(columnArr);
-                }
+                csvWrite.writeNext(columnArr);
             }
         } catch (IOException e) {
             e.printStackTrace();
