@@ -69,6 +69,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     //On off data columns
     private static final String COLUMN_FK_ID_TYPE = "fk_id_type";
 
+    //Data coluns
+    private static final String COLUMN_DATA_TYPE = "data_type";
+
     private static DatabaseHelper instance;
 
     public DatabaseHelper(@Nullable Context context) {
@@ -105,7 +108,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "CREATE TABLE " + TABLE_DATA + " (" +
                         COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                         COLUMN_DATETIME + " DATETIME NOT NULL," +
-                        COLUMN_USER_ID + " VARCHAR(50) NOT NULL" +
+                        COLUMN_USER_ID + " VARCHAR(50) NOT NULL, " +
+                        COLUMN_DATA_TYPE + " VARCHAR(50) NOT NULL" +
                         ");";
 
         queries[2] =
@@ -269,6 +273,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         cvData.put(COLUMN_DATETIME, datetime);
         cvData.put(COLUMN_USER_ID, user_id);
+        cvData.put(COLUMN_DATA_TYPE, "Sensor");
 
         db.beginTransaction();
 
@@ -327,6 +332,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         cvData.put(COLUMN_USER_ID, userID);
         cvData.put(COLUMN_DATETIME, datetime);
+        cvData.put(COLUMN_DATA_TYPE, "Call");
 
         cvCall.put(COLUMN_FK_CD, fkIdCallState);
         cvCall.put(COLUMN_DURATION, duration);
@@ -364,6 +370,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         cvData.put(COLUMN_USER_ID, userID);
         cvData.put(COLUMN_DATETIME, datetime);
+        cvData.put(COLUMN_DATA_TYPE, "Text message");
 
         db.beginTransaction();
 
@@ -389,6 +396,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         cvData.put(COLUMN_DATETIME, datetime);
         cvData.put(COLUMN_USER_ID, userID);
+        cvData.put(COLUMN_DATA_TYPE, "App");
 
         cvApp.put(COLUMN_PACKAGE, packageName);
 
@@ -416,6 +424,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         cvData.put(COLUMN_DATETIME, datetime);
         cvData.put(COLUMN_USER_ID, userID);
+        cvData.put(COLUMN_DATA_TYPE, "Noise detector");
 
         cvNoiseDetector.put(COLUMN_VOLUME, volume);
         cvNoiseDetector.put(COLUMN_DB_COUNT, dbCount);
@@ -459,6 +468,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         cvData.put(COLUMN_DATETIME, datetime);
         cvData.put(COLUMN_USER_ID, userID);
+        cvData.put(COLUMN_DATA_TYPE, "Battery");
 
         cvBattery.put(COLUMN_BATTERY_LEVEL, batteryLevel);
 
@@ -507,6 +517,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         cvData.put(COLUMN_USER_ID, userID);
         cvData.put(COLUMN_DATETIME, datetime);
+        cvData.put(COLUMN_DATA_TYPE, "On/off data");
 
         cvCall.put(COLUMN_FK_ID_STATE, fkIdOnOffState);
         cvCall.put(COLUMN_FK_ID_TYPE, fkIdOnOffType);
@@ -535,6 +546,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         cvData.put(COLUMN_DATETIME, datetime);
         cvData.put(COLUMN_USER_ID, userID);
+        cvData.put(COLUMN_DATA_TYPE, "Network");
 
         cvNetwork.put(COLUMN_NETWORK_INFO, info);
 
@@ -575,7 +587,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public static String getJoinQuery() {
-        String query = "SELECT d." + COLUMN_ID + ", d." + COLUMN_DATETIME + ", d." + COLUMN_USER_ID + ", d." + COLUMN_DURATION + ", d."
+        String query = "SELECT d." + COLUMN_DATA_TYPE + ", d." + COLUMN_ID + ", d." + COLUMN_DATETIME + ", d." + COLUMN_USER_ID + ", d." + COLUMN_DURATION + ", d."
                 + COLUMN_X + ", d." + COLUMN_Y + ", d." + COLUMN_Z + ", d." + COLUMN_VOLUME + ", d." + COLUMN_DB_COUNT + ", d."
                 + COLUMN_NETWORK_INFO + ", d." + COLUMN_BATTERY_LEVEL + ", d." + COLUMN_PACKAGE + ", "
                 + TABLE_SENSORS + "." + COLUMN_NAME + " AS Sensor_name, "
