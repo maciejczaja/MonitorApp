@@ -17,6 +17,7 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
+import com.monitorapp.BuildConfig;
 import com.monitorapp.utils.DriveUtils;
 
 import java.util.Collections;
@@ -54,7 +55,9 @@ public class DriveActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        Log.d(TAG, ": result code = " + resultCode);
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, ": result code = " + resultCode);
+        }
         if (requestCode == REQUEST_CODE_SIGN_IN_INTENT && resultCode == RESULT_OK) {
             handleSignInIntent(data);
             startActivity(new Intent(this, FileUploadActivity.class));
@@ -88,6 +91,8 @@ public class DriveActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Log.d(TAG, " : Destroyed");
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, " : Destroyed");
+        }
     }
 }

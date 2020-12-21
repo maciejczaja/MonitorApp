@@ -38,10 +38,10 @@ public class ZipUtils {
                     zipFile = zipWithPassword(activity, path, password.toCharArray());
                 }
             } catch (ZipException e) {
-                Log.d(TAG, "Exception caused by ZIP file: " + zipFile.toString());
                 Toast.makeText(activity, "Making ZIP file failed!", Toast.LENGTH_SHORT).show();
                 e.printStackTrace();
             }
+            assert zipFile != null;
             Log.d(TAG, "ZIP file made in location: " + zipFile.toString());
             Toast.makeText(activity, "Making ZIP file " + zipFile.toString() + " finished successfully!", Toast.LENGTH_LONG).show();
             activity.finish();
@@ -61,8 +61,6 @@ public class ZipUtils {
         zipParameters.setEncryptionMethod(EncryptionMethod.AES);
         zipParameters.setAesKeyStrength(AesKeyStrength.KEY_STRENGTH_256);
 
-        //String defaultLocation = activity.getFilesDir().getParent();
-
         ZipFile zipFile = new ZipFile(getZipStoragePath(activity) + "/" + dateString + ".zip", password);
         zipFile.addFile(new File(file), zipParameters);
 
@@ -73,8 +71,6 @@ public class ZipUtils {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy-HH-mm-ss");
         Date date = new Date();
         String dateString = simpleDateFormat.format(date);
-
-        //String defaultLocation = activity.getFilesDir().getParent();
 
         ZipFile zipFile = new ZipFile(getZipStoragePath(activity) + "/" + dateString + ".zip");
         zipFile.addFile(new File(file));

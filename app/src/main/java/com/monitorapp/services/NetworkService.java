@@ -26,6 +26,8 @@ public class NetworkService extends Service {
     public void onCreate() {
         mNetworkReceiver = new BroadcastReceiverClass();
         IntentFilter filter = new IntentFilter();
+
+        /* TODO: CONNECTIVITY_ACTION deprecated */
         filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
 
         registerReceiver(mNetworkReceiver, filter);
@@ -38,7 +40,7 @@ public class NetworkService extends Service {
                 unregisterReceiver(mNetworkReceiver);
             }
         } catch (IllegalArgumentException e) {
-            Log.e("Error", "Exception");
+            e.printStackTrace();
         }
     }
 }

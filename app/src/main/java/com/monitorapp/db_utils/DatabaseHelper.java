@@ -8,18 +8,19 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import androidx.annotation.Nullable;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
-    private Context context;
     private static final String DATABASE_NAME = "Stats.db";
     private static final int DATABASE_VERSION = 1;
 
     private static final int NUMBER_OF_TABLES = 13;
 
-    //Table names
+    /* Table names */
     private static final String TABLE_MOTION_SENSORS = "Motion_sensors";
     private static final String TABLE_MOTION_SENSOR_READINGS = "Motion_sensor_readings";
     private static final String TABLE_DATA = "Data";
@@ -34,46 +35,43 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TABLE_STATES_ON_OFF = "States_on_off";
     private static final String TABLE_TYPES_ON_OFF = "Types_on_off";
 
-    //Shared attribute names
+    /* Shared attribute names */
     private static final String COLUMN_ID = "id";
     private static final String COLUMN_NAME = "name";
     private static final String COLUMN_USER_ID = "user_id";
     private static final String COLUMN_DATETIME = "datetime";
     private static final String COLUMN_FK_ID_STATE = "fk_id_state";
 
-    //Motion sensor readings columns
+    /* Motion sensor readings columns */
     private static final String COLUMN_X = "x_axis";
     private static final String COLUMN_Y = "y_axis";
     private static final String COLUMN_Z = "z_axis";
     private static final String COLUMN_FK_MSR = "fk_sensors_id";
 
-    //App data columns
+    /* App data columns */
     private static final String COLUMN_PACKAGE = "package";
-    private static final String COLUMN_PROCESS = "process";
-    private static final String COLUMN_FK_AD = "fk_event_types_id";
 
-    //Call data columns
+    /* Call data columns */
     private static final String COLUMN_FK_CD = "fk_call_state_id";
     private static final String COLUMN_DURATION = "duration";
 
-    //Noise detector data columns
+    /* Noise detector data columns */
     private static final String COLUMN_VOLUME = "volume";
     private static final String COLUMN_DB_COUNT = "db_count";
 
-    //Battery data columns
+    /* Battery data columns */
     private static final String COLUMN_BATTERY_LEVEL = "battery_level";
 
-    //Network data columns
+    /* Network data columns */
     private static final String COLUMN_NETWORK_INFO = "network_info";
 
-    //On off data columns
+    /* On off data columns */
     private static final String COLUMN_FK_ID_TYPE = "fk_id_type";
 
     private static DatabaseHelper instance;
 
     public DatabaseHelper(@Nullable Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
-        this.context = context;
     }
 
 
@@ -87,14 +85,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        /*String query =
-                "CREATE TABLE " + TABLE_NAME +
-                        " (" + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                        COLUMN_USER_ID + " TEXT, " +
-                        COLUMN_PACKAGE + " TEXT, " +
-                        COLUMN_PROCESS + " TEXT, " +
-                        COLUMN_TIME + " TEXT);";*/
-        String queries[] = new String [NUMBER_OF_TABLES];
+
+        String[] queries = new String [NUMBER_OF_TABLES];
         queries[0] =
                 "CREATE TABLE " + TABLE_MOTION_SENSORS + " ("+
                         COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
@@ -204,7 +196,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+    public void onUpgrade(@NotNull SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_MOTION_SENSORS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_MOTION_SENSOR_READINGS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_DATA);
@@ -223,7 +215,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    void addRecordMotionSensors(String name, SQLiteDatabase db) {
+    void addRecordMotionSensors(String name, @NotNull SQLiteDatabase db) {
         ContentValues cv = new ContentValues();
 
         cv.put(COLUMN_NAME, name);
@@ -233,7 +225,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public void addRecordMotionSensorReadings(String user_id, String datetime,
                                               Float x_axis, Float y_axis, Float z_axis,
-                                              String sensorName) {
+                                              @NotNull String sensorName) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cvData = new ContentValues();
         ContentValues cvSensor = new ContentValues();
@@ -254,6 +246,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         String[] params = new String[]{ newName };
         String[] columns = new String[] {COLUMN_ID};
+
+        /*TODO: This Cursor should be freed up after use with #close() */
         Cursor c = db.query(TABLE_MOTION_SENSORS, columns,
                 COLUMN_NAME + " = ?", params,
                 null, null, null);
@@ -285,24 +279,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    void addRecordData(String datetime, Long user_id) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues cv = new ContentValues();
-
-        cv.put(COLUMN_USER_ID, user_id);
-        cv.put(COLUMN_DATETIME, datetime);
-
-        long result = db.insert(TABLE_DATA, null, cv);
-
-
-    }
-
     public void addRecordCallData(int callStateInt, String userID, String datetime, int duration) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cvCall = new ContentValues();
         ContentValues cvData = new ContentValues();
-        Long fkIdCallState = Long.valueOf(0);
-        Long lastID = Long.valueOf(0);
+        Long fkIdCallState = 0L;
+        Long lastID = 0L;
         String callState = "";
 
         if (callStateInt == 1) {
@@ -347,20 +329,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     }
 
-    void addRecordCallState(String name, SQLiteDatabase db) {
+    void addRecordCallState(String name, @NotNull SQLiteDatabase db) {
         ContentValues cv = new ContentValues();
 
         cv.put(COLUMN_NAME, name);
 
         long result = db.insert(TABLE_CALL_STATES, null, cv);
-
     }
 
     public void addRecordTextMessageData(String userID, String datetime) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
         ContentValues cvData = new ContentValues();
-        Long lastID = Long.valueOf(0);
+        Long lastID = 0L;
 
         cvData.put(COLUMN_USER_ID, userID);
         cvData.put(COLUMN_DATETIME, datetime);
@@ -385,7 +366,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cvApp = new ContentValues();
         ContentValues cvData = new ContentValues();
-        Long lastID = Long.valueOf(0);
+        Long lastID = 0L;
 
         cvData.put(COLUMN_DATETIME, datetime);
         cvData.put(COLUMN_USER_ID, userID);
@@ -435,7 +416,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    public void addRecordTypesOnOff(String name, SQLiteDatabase db) {
+    public void addRecordTypesOnOff(String name, @NotNull SQLiteDatabase db) {
         ContentValues cv = new ContentValues();
 
         cv.put(COLUMN_NAME, name);
@@ -443,7 +424,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.insert(TABLE_TYPES_ON_OFF, null, cv);
     }
 
-    public void addRecordStatesOnOff(String name, SQLiteDatabase db) {
+    public void addRecordStatesOnOff(String name, @NotNull SQLiteDatabase db) {
         ContentValues cv = new ContentValues();
 
         cv.put(COLUMN_NAME, name);
@@ -553,8 +534,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    //public void addTextMessageData(String datetime, String userID, )
-
+    @NotNull
     public static List<String> getTableNames() {
         List<String> tables = new ArrayList<>();
         tables.add(TABLE_APP_DATA);

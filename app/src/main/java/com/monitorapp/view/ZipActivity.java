@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.monitorapp.BuildConfig;
 import com.monitorapp.R;
 import com.nbsp.materialfilepicker.ui.FilePickerActivity;
 
@@ -24,7 +25,9 @@ public class ZipActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Log.d(TAG, " : Started");
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, " : Started");
+        }
         showFilePicker(this, getCsvStoragePath(this), Pattern.compile(".*\\.(csv)$"), "Select a CSV file.", REQUEST_CODE_ZIP_FILE);
     }
 
@@ -44,6 +47,8 @@ public class ZipActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Log.d(TAG, " : Destroyed");
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, " : Destroyed");
+        }
     }
 }

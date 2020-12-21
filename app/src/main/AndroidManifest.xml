@@ -69,9 +69,6 @@
         <service android:name=".services.SmsService" />
         <service android:name=".db_utils.SQLExporter"/>
         <service android:name=".services.MonitoringNotificationService"/>
-        <service android:name=".services.MonitoringService"
-            android:permission="android.permission.BIND_JOB_SERVICE"
-            android:exported="true"/>
 
     </application>
 

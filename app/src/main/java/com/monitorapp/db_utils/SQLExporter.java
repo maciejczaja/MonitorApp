@@ -1,15 +1,16 @@
 package com.monitorapp.db_utils;
 
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
 
+import com.monitorapp.BuildConfig;
 import com.opencsv.CSVWriter;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -24,43 +25,40 @@ public class SQLExporter extends Service {
 
     private static final String TAG = "SQL Exporter";
 
-    private boolean isRunning = false;
-
     @Override
     public void onCreate() {
-        Log.i(TAG, "Service on create");
-
-        isRunning = true;
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, "Service on create");
+        }
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.i(TAG, "Service onStartCommand");
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, "Service onStartCommand");
+        }
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                DatabaseHelper dbHelper = DatabaseHelper.getHelper(getApplicationContext());
-                SQLiteDatabase db = dbHelper.getWritableDatabase();
-                File targetDir = createDirectory(csvDirectory.toString());
-                String fileName = generateFileName();
-                File targetFile = new File(targetDir, fileName);
-                try {
-                    targetFile.createNewFile();
-                } catch (IOException e){
-                    e.printStackTrace();
-                }
-                List<String> tables = DatabaseHelper.getTableNames();
-                try {
-                    writeCSV(targetFile, db, tables);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    db.close();
-                }
-
-                stopSelf();
+        new Thread(() -> {
+            DatabaseHelper dbHelper = DatabaseHelper.getHelper(getApplicationContext());
+            SQLiteDatabase db = dbHelper.getWritableDatabase();
+            File targetDir = createDirectory(csvDirectory.toString());
+            String fileName = generateFileName();
+            File targetFile = new File(targetDir, fileName);
+            try {
+                targetFile.createNewFile();
+            } catch (IOException e){
+                e.printStackTrace();
             }
+            List<String> tables = DatabaseHelper.getTableNames();
+            try {
+                writeCSV(targetFile, db, tables);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                db.close();
+            }
+
+            stopSelf();
         }).start();
 
         return Service.START_STICKY;
@@ -68,18 +66,21 @@ public class SQLExporter extends Service {
 
     @Override
     public IBinder onBind(Intent arg0) {
-        Log.i(TAG, "Service onBind");
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, "Service onBind");
+        }
         return null;
     }
 
     @Override
     public void onDestroy() {
 
-        isRunning = false;
-
-        Log.i(TAG, "Service onDestroy");
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, "Service onDestroy");
+        }
     }
 
+    @NotNull
     public static File createDirectory(String path) {
         File dir = new File(path);
         boolean result = true;
@@ -90,11 +91,11 @@ public class SQLExporter extends Service {
         return dir;
     }
 
-    private static void writeSingleValue(CSVWriter writer, String value) {
+    private static void writeSingleValue(@NotNull CSVWriter writer, String value) {
         writer.writeNext(new String[]{value});
     }
 
-    private static void writeCSV(File file, SQLiteDatabase db, List<String> tables) {
+    private static void writeCSV(File file, @NotNull SQLiteDatabase db, @NotNull List<String> tables) {
         CSVWriter csvWrite = null;
         Cursor csvCursor = null;
         try {
@@ -134,10 +135,10 @@ public class SQLExporter extends Service {
         }
     }
 
+    @NotNull
     public static String generateFileName() {
         SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy HH.mm.ss");
         Date date = new Date(System.currentTimeMillis());
-        String name = "database_export_" + formatter.format(date) + ".csv";
-        return name;
+        return "database_export_" + formatter.format(date) + ".csv";
     }
 }

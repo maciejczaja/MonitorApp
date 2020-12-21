@@ -40,7 +40,7 @@ public class BatteryService extends Service {
                 unregisterReceiver(mBatteryReceiver);
             }
         } catch (IllegalArgumentException e) {
-            Log.e("Error", "Exception");
+            e.printStackTrace();
         }
     }
 }

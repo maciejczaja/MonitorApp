@@ -4,32 +4,31 @@ import android.app.AppOpsManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.Icon;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
 import android.provider.Settings;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
+import com.monitorapp.BuildConfig;
 import com.monitorapp.R;
 import com.monitorapp.db_utils.SQLExporter;
-import com.monitorapp.db_utils.UserIDStore;
 import com.monitorapp.view.MainActivity;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
+import java.util.Objects;
 
 import static com.monitorapp.enums.SensorType.TYPE_ACCELEROMETER;
 import static com.monitorapp.enums.SensorType.TYPE_GRAVITY;
@@ -37,7 +36,6 @@ import static com.monitorapp.enums.SensorType.TYPE_GYROSCOPE;
 import static com.monitorapp.enums.SensorType.TYPE_LIGHT;
 import static com.monitorapp.enums.SensorType.TYPE_MAGNETIC_FIELD;
 import static com.monitorapp.view.MainActivity.PACKAGE_NAME;
-import static com.monitorapp.view.MainActivity.editTextDelay;
 import static com.monitorapp.view.MainActivity.isAppRunning;
 import static com.monitorapp.view.MainActivity.switchAccelerometer;
 import static com.monitorapp.view.MainActivity.switchAirplaneMode;
@@ -59,7 +57,6 @@ public class MonitoringNotificationService extends Service {
 
     public static final String ACTION_START_SERVICE = PACKAGE_NAME + ".ACTION_START_SERVICE";
     public static final String ACTION_STOP_SERVICE = PACKAGE_NAME + ".ACTION_STOP_SERVICE";
-    private static final String ACTION_MAIN = PACKAGE_NAME + ".ACTION_MAIN";
     private static final String TAG = "MonitoringNotifService";
 
     public static boolean isServiceRunning = false;
@@ -78,7 +75,6 @@ public class MonitoringNotificationService extends Service {
     private boolean ifNetwMonitoring;
     private boolean ifAppMonitoring;
     private boolean isAppRunning;
-    private long delay;
     private String delayString;
 
     @Override
@@ -90,7 +86,7 @@ public class MonitoringNotificationService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (intent != null && intent.getAction().equals(ACTION_START_SERVICE)) {
+        if (intent != null && Objects.equals(intent.getAction(), ACTION_START_SERVICE)) {
             startServiceWithNotification();
         } else stopMyService();
         return START_STICKY;
@@ -99,7 +95,9 @@ public class MonitoringNotificationService extends Service {
     @Override
     public void onDestroy() {
         isServiceRunning = false;
-        Log.d(TAG, ": destroyed");
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, ": destroyed");
+        }
         super.onDestroy();
     }
 
@@ -118,9 +116,16 @@ public class MonitoringNotificationService extends Service {
 
         onMonitoringStart();
 
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O)
-            startForeground(NOTIFICATION_ID, new Notification());
-        else {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this);
+            Notification notification = notificationBuilder.setOngoing(true)
+                    .setSmallIcon(R.drawable.ic_stat_name)
+                    .setContentTitle("App is running in background")
+                    .setCategory(Notification.CATEGORY_SERVICE)
+                    .build();
+
+            startForeground(NOTIFICATION_ID, notification);
+        } else {
             String NOTIFICATION_CHANNEL_ID = "com.MonitorApp";
             String channelName = "Background Service";
             NotificationChannel chan = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_NONE);
@@ -133,8 +138,10 @@ public class MonitoringNotificationService extends Service {
 
             NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
             Notification notification = notificationBuilder.setOngoing(true)
+                    .setSmallIcon(R.drawable.ic_stat_name)
+                    .setLargeIcon(BitmapFactory.decodeResource(this.getResources(), R.drawable.ic_stat_name))
                     .setContentTitle("App is running in background")
-                    .setPriority(NotificationManager.IMPORTANCE_MIN)
+                    .setPriority(NotificationManager.IMPORTANCE_DEFAULT)
                     .setCategory(Notification.CATEGORY_SERVICE)
                     .build();
 
@@ -150,7 +157,9 @@ public class MonitoringNotificationService extends Service {
     }
 
     private void onMonitoringStart() {
-        Log.d(TAG, ": onMonitoringStart");
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, ": onMonitoringStart");
+        }
 
         isAppRunning = isAppRunning(this);
 
@@ -256,26 +265,39 @@ public class MonitoringNotificationService extends Service {
         }
 
         if (ifAppMonitoring) {
+            long delay;
             if (delayString.isEmpty()) {
-//                Toast.makeText(this, "Empty delay field: app check started with delay default value of 5 seconds.", Toast.LENGTH_LONG).show();
+                if (isServiceRunning) {
+                    postToastFromService("Empty delay field: app check started with delay default value of 5 seconds.");
+                }
                 startService(new Intent(getApplicationContext(), ForegroundAppService.class).putExtra("DELAY", 5));
             } else if (delayString.startsWith("-")) {
-//                Toast.makeText(this, "Negative delay specified: app check started with delay default value of 5 seconds.", Toast.LENGTH_LONG).show();
+                if (isServiceRunning) {
+                    postToastFromService("Negative delay specified: app check started with delay default value of 5 seconds.");
+                }
                 startService(new Intent(getApplicationContext(), ForegroundAppService.class).putExtra("DELAY", 5));
             } else if (delayString.startsWith("+")) {
+                if (isServiceRunning) {
+                    postToastFromService("Redundant plus character: app check started with delay value of " + delayString.substring(1) + " seconds.");
+                }
                 delay = Long.parseLong(delayString.substring(1));
-//                Toast.makeText(this, "Redundant plus character: app check started with delay value of " + delayString.substring(1) + " seconds.", Toast.LENGTH_LONG).show();
                 startService(new Intent(getApplicationContext(), ForegroundAppService.class).putExtra("DELAY", delay));
             } else if (delayString.equals("0") || delayString.equals("00")) {
-//                Toast.makeText(this, "Delay equals zero: app check started with delay default value of 5 seconds.", Toast.LENGTH_LONG).show();
+                if (isServiceRunning) {
+                    postToastFromService("Delay equals zero: app check started with delay default value of 5 seconds.");
+                }
                 startService(new Intent(getApplicationContext(), ForegroundAppService.class).putExtra("DELAY", 5));
             } else if (delayString.startsWith("0")) {
                 delay = Long.parseLong(delayString);
-//                Toast.makeText(this, "App check started with delay value of " + delayString.substring(1) + " seconds.", Toast.LENGTH_LONG).show();
+                if (isServiceRunning) {
+                    postToastFromService("App check started with delay value of " + delayString.substring(1) + " seconds.");
+                }
                 startService(new Intent(getApplicationContext(), ForegroundAppService.class).putExtra("DELAY", delay));
             } else {
                 delay = Long.parseLong(delayString);
-//                Toast.makeText(this, "App check started with delay value of " + delayString + " seconds.", Toast.LENGTH_LONG).show();
+                if (isServiceRunning) {
+                    postToastFromService("App check started with delay value of " + delayString + " seconds.");
+                }
                 startService(new Intent(getApplicationContext(), ForegroundAppService.class).putExtra("DELAY", delay));
             }
         }
@@ -284,12 +306,10 @@ public class MonitoringNotificationService extends Service {
         }
     }
 
-//    private void onMonitoringStart() {
-//        Log.d(TAG, ": monitoring start");
-//    }
-
     private void onMonitoringStop() {
-        Log.d(TAG, ": onMonitoringStop");
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, ": onMonitoringStop");
+        }
 
         /* SOUND LEVEL */
         if (ifSoundMonitoring) {
@@ -452,7 +472,12 @@ public class MonitoringNotificationService extends Service {
         ifAirplMonitoring = sharedPreferences.getBoolean("switchAirplaneMode", false);
         ifNetwMonitoring = sharedPreferences.getBoolean("switchNetwork", false);
         ifAppMonitoring = sharedPreferences.getBoolean("switchForegroundApp", false);
-        String a = sharedPreferences.getString("editTextDelay", "");
+        String editTextString = sharedPreferences.getString("editTextDelay", "");
         delayString = sharedPreferences.getString("editTextDelay", "");
+    }
+
+    private void postToastFromService(final String message) {
+        Handler handler = new Handler(getApplicationContext().getMainLooper());
+        handler.post(() -> Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show());
     }
 }

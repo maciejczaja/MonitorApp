@@ -9,8 +9,11 @@ import android.hardware.SensorManager;
 import android.os.IBinder;
 import android.util.Log;
 
+import com.monitorapp.BuildConfig;
 import com.monitorapp.db_utils.DatabaseHelper;
 import com.monitorapp.db_utils.UserIDStore;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.sql.Date;
 import java.text.SimpleDateFormat;
@@ -30,7 +33,7 @@ public class SensorsService extends Service {
         public void onAccuracyChanged(Sensor sensor, int accuracy) {
         }
 
-        public void onSensorChanged(SensorEvent event) {
+        public void onSensorChanged(@NotNull SensorEvent event) {
             float[] values = event.values;
             DatabaseHelper dbHelper = DatabaseHelper.getHelper(getApplicationContext());
 
@@ -38,24 +41,30 @@ public class SensorsService extends Service {
             Date date = new Date(System.currentTimeMillis());
 
             if (values.length == 1) {
-                Log.d(String.valueOf(event.sensor.getName()), "x: " + values[0]);
+                if (BuildConfig.DEBUG) {
+                    Log.d(String.valueOf(event.sensor.getName()), "x: " + values[0]);
+                }
                 dbHelper.addRecordMotionSensorReadings(UserIDStore.id(getApplicationContext()), sdf.format(date), values[0], null, null, event.sensor.getName());
             }
 
             if (values.length == 2) {
-                Log.d(String.valueOf(event.sensor.getName()), "x: " + values[0] + ", y: ");
+                if (BuildConfig.DEBUG) {
+                    Log.d(String.valueOf(event.sensor.getName()), "x: " + values[0] + ", y: ");
+                }
                 dbHelper.addRecordMotionSensorReadings(UserIDStore.id(getApplicationContext()), sdf.format(date), values[0], values[1], null, event.sensor.getName());
             }
 
             if (values.length == 3) {
-                Log.d(String.valueOf(event.sensor.getName()), "x: " + values[0] + ", y: " + values[1] + ", z: " + values[2]);
+                if (BuildConfig.DEBUG) {
+                    Log.d(String.valueOf(event.sensor.getName()), "x: " + values[0] + ", y: " + values[1] + ", z: " + values[2]);
+                }
                 dbHelper.addRecordMotionSensorReadings(UserIDStore.id(getApplicationContext()), sdf.format(date), values[0], values[1], values[2], event.sensor.getName());
             }
         }
     };
 
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
+    public int onStartCommand(@NotNull Intent intent, int flags, int startId) {
 
         int type_sensor = intent.getIntExtra("SENSOR_TYPE", -1);
 

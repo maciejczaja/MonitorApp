@@ -25,6 +25,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.app.ActivityCompat;
 
+import com.monitorapp.BuildConfig;
 import com.monitorapp.R;
 import com.monitorapp.services.MonitoringNotificationService;
 
@@ -74,9 +75,7 @@ public class MainActivity extends AppCompatActivity {
 
     public static EditText editTextDelay;
 
-    private Button buttonZip;
     private static Button buttonStartStop;
-    private Button buttonSend;
 
     private static boolean buttonStartStopStatus = false;
 
@@ -96,7 +95,9 @@ public class MainActivity extends AppCompatActivity {
 
         initUIComponents();
         loadUiState(this);
-        Log.d(TAG, "editTextDelay: " + editTextDelay.toString());
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, "editTextDelay: " + editTextDelay.toString());
+        }
     }
 
     @Override
@@ -105,14 +106,6 @@ public class MainActivity extends AppCompatActivity {
         requestPermissions();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             batteryOptimizations(getApplicationContext());
-        }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (!hasPermissions()) {
-            return;
         }
     }
 
@@ -153,27 +146,15 @@ public class MainActivity extends AppCompatActivity {
         };
         editTextDelay.addTextChangedListener(delayInputTextWatcher);
 
-        buttonZip = findViewById(R.id.Button_zip);
+        Button buttonZip = findViewById(R.id.Button_zip);
         buttonZip.setOnClickListener(view -> startActivity(new Intent(getApplicationContext(), ZipActivity.class)));
 
         buttonStartStop = findViewById(R.id.Button_start_stop);
         buttonStartStop.setText(R.string.button_start);
         buttonStartStop.setOnClickListener(view -> {
             if (!buttonStartStopStatus) {
-
                 saveUiState(this);
 
-                //startService(new Intent(getApplicationContext(), MonitoringService.class).putExtra("monitoringType", "START"));
-//                JobScheduler jobScheduler = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
-//                PersistableBundle bundle = new PersistableBundle();
-//                bundle.putString("monitoringType", "START");
-//
-//                JobInfo jobInfo = new JobInfo.Builder(11, new ComponentName(this, MonitoringService.class))
-//                        .setExtras(bundle)
-//                        .setOverrideDeadline(0)
-//                        .build();
-//
-//                jobScheduler.schedule(jobInfo);
                 Intent startIntent = new Intent(getApplicationContext(), MonitoringNotificationService.class);
                 startIntent.setAction(ACTION_START_SERVICE);
                 startService(startIntent);
@@ -182,22 +163,11 @@ public class MainActivity extends AppCompatActivity {
                 Intent stopIntent = new Intent(getApplicationContext(), MonitoringNotificationService.class);
                 stopIntent.setAction(ACTION_STOP_SERVICE);
                 startService(stopIntent);
-                //startService(new Intent(getApplicationContext(), MonitoringService.class).putExtra("monitoringType", "STOP"));
-//                JobScheduler jobScheduler = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
-//                PersistableBundle bundle = new PersistableBundle();
-//                bundle.putString("monitoringType", "STOP");
-//
-//                JobInfo jobInfo = new JobInfo.Builder(11, new ComponentName(this, MonitoringService.class))
-//                        .setExtras(bundle)
-//                        .setOverrideDeadline(0)
-//                        .build();
-//
-//                jobScheduler.schedule(jobInfo);
             }
             changeButtonText();
         });
 
-        buttonSend = findViewById(R.id.Button_send);
+        Button buttonSend = findViewById(R.id.Button_send);
         buttonSend.setOnClickListener(view -> startActivity(new Intent(getApplicationContext(), DriveActivity.class)
                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)));
     }
@@ -219,17 +189,6 @@ public class MainActivity extends AppCompatActivity {
         if (!hasSensorPermissions(PERMISSIONS)) {
             ActivityCompat.requestPermissions(this, PERMISSIONS, REQUEST_CODE_PERMISSIONS_ALL);
         } else {
-            //startService(new Intent(getApplicationContext(), MonitoringService.class).putExtra("monitoringType", "CHECK"));
-//            JobScheduler jobScheduler = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
-//            PersistableBundle bundle = new PersistableBundle();
-//            bundle.putString("monitoringType", "CHECK");
-//
-//            JobInfo jobInfo = new JobInfo.Builder(11, new ComponentName(this, MonitoringService.class))
-//                    .setExtras(bundle)
-//                    .setOverrideDeadline(0)
-//                    .build();
-//
-//            jobScheduler.schedule(jobInfo);
             checkMonitoringPermissions();
         }
 
@@ -267,17 +226,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == REQUEST_CODE_PERMISSIONS_ALL) {
-            //startService(new Intent(getApplicationContext(), MonitoringService.class).putExtra("monitoringType", "CHECK"));
-//            JobScheduler jobScheduler = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
-//            PersistableBundle bundle = new PersistableBundle();
-//            bundle.putString("monitoringType", "CHECK");
-//
-//            JobInfo jobInfo = new JobInfo.Builder(11, new ComponentName(this, MonitoringService.class))
-//                    .setExtras(bundle)
-//                    .setOverrideDeadline(0)
-//                    .build();
-//
-//            jobScheduler.schedule(jobInfo);
             checkMonitoringPermissions();
         }
     }
@@ -311,19 +259,21 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
 
-        appOpsManager.startWatchingMode(AppOpsManager.OPSTR_GET_USAGE_STATS, getApplicationContext().getPackageName(), new AppOpsManager.OnOpChangedListener() {
-            @Override
-            public void onOpChanged(String s, String s1) {
-                int mode = appOpsManager.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, android.os.Process.myUid(), getPackageName());
-                if (mode != AppOpsManager.MODE_ALLOWED) {
-                    return;
-                }
-                appOpsManager.stopWatchingMode(this);
-                Intent intent = new Intent(MainActivity.this, MainActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-                getApplicationContext().startActivity(intent);
-            }
-        });
+        appOpsManager.startWatchingMode(AppOpsManager.OPSTR_GET_USAGE_STATS,
+                getApplicationContext().getPackageName(),
+                new AppOpsManager.OnOpChangedListener() {
+                    @Override
+                    public void onOpChanged(String s, String s1) {
+                        int mode = appOpsManager.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, android.os.Process.myUid(), getPackageName());
+                        if (mode != AppOpsManager.MODE_ALLOWED) {
+                            return;
+                        }
+                        appOpsManager.stopWatchingMode(this);
+                        Intent intent = new Intent(MainActivity.this, MainActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                        getApplicationContext().startActivity(intent);
+                    }
+                });
         requestUsageStatsPermission();
         return false;
     }
@@ -388,7 +338,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void checkMonitoringPermissions() {
-        Log.d(TAG, ": onMonitoringPermissionsCheck");
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, ": onMonitoringPermissionsCheck");
+        }
 
         /* SOUND LEVEL */
         if (!hasSensorPermissions(new String[]{android.Manifest.permission.RECORD_AUDIO})) {

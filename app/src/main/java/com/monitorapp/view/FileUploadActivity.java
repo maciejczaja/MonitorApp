@@ -8,6 +8,7 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
+import com.monitorapp.BuildConfig;
 import com.nbsp.materialfilepicker.ui.FilePickerActivity;
 
 import java.util.regex.Pattern;
@@ -26,7 +27,9 @@ public class FileUploadActivity extends Activity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(TAG, " : Started");
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, " : Started");
+        }
 
         showFilePicker(this, getZipStoragePath(this), Pattern.compile(".*\\.(zip)$"), "Select ZIP file for upload.", REQUEST_CODE_FILE_UPLOAD);
     }
@@ -57,6 +60,8 @@ public class FileUploadActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Log.d(TAG, " : Destroyed");
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, " : Destroyed");
+        }
     }
 }
