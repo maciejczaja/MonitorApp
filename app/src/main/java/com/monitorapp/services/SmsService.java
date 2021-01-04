@@ -44,6 +44,7 @@ public class SmsService extends Service {
                 unregisterReceiver(mSmsReceiver);
             }
         } catch (IllegalArgumentException e) {
+            e.printStackTrace();
         }
     }
 }

@@ -38,17 +38,17 @@ public class ZipUtils {
                     zipFile = zipWithPassword(activity, path, password.toCharArray());
                 }
             } catch (ZipException e) {
-                Log.d(TAG, "Exception caused by ZIP file: " + zipFile.toString());
                 Toast.makeText(activity, "Making ZIP file failed!", Toast.LENGTH_SHORT).show();
                 e.printStackTrace();
             }
+            assert zipFile != null;
             Log.d(TAG, "ZIP file made in location: " + zipFile.toString());
             Toast.makeText(activity, "Making ZIP file " + zipFile.toString() + " finished successfully!", Toast.LENGTH_LONG).show();
             activity.finish();
             return zipFile;
         };
 
-        getPasswordFromDialog(context, cZipFile);
+        getPasswordFromDialog(activity, context, cZipFile);
     }
 
     private static File zipWithPassword(@NotNull final Activity activity, final String file, final char[] password) throws ZipException {
@@ -61,8 +61,6 @@ public class ZipUtils {
         zipParameters.setEncryptionMethod(EncryptionMethod.AES);
         zipParameters.setAesKeyStrength(AesKeyStrength.KEY_STRENGTH_256);
 
-        //String defaultLocation = activity.getFilesDir().getParent();
-
         ZipFile zipFile = new ZipFile(getZipStoragePath(activity) + "/" + dateString + ".zip", password);
         zipFile.addFile(new File(file), zipParameters);
 
@@ -74,15 +72,13 @@ public class ZipUtils {
         Date date = new Date();
         String dateString = simpleDateFormat.format(date);
 
-        //String defaultLocation = activity.getFilesDir().getParent();
-
         ZipFile zipFile = new ZipFile(getZipStoragePath(activity) + "/" + dateString + ".zip");
         zipFile.addFile(new File(file));
 
         return zipFile.getFile();
     }
 
-    public static void getPasswordFromDialog(Context context, final Callable<File> zipFunction) {
+    public static void getPasswordFromDialog(Activity activity, Context context, final Callable<File> zipFunction) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("Type in your password:");
         final EditText input = new EditText(context);
@@ -97,7 +93,10 @@ public class ZipUtils {
                 e.printStackTrace();
             }
         });
-        builder.setNegativeButton(android.R.string.cancel, (dialogInterface, i) -> dialogInterface.cancel());
+        builder.setNegativeButton(android.R.string.cancel, (dialogInterface, i) -> {
+            dialogInterface.cancel();
+            activity.finish();
+        });
         builder.show();
     }
 }

@@ -19,5 +19,9 @@
     <string name="button_stop">Stop</string>
     <string name="button_start">Start</string>
     <string name="send_file">Send</string>
-    <string name="please_wait">Please wait...</string>
+    <string name="please_wait">Please wait…</string>
+    <string name="notification_string">ServiceNotification</string>
+
+<!--    Web client (Auto-created for Google Sign-in) OAuth Client ID-->
+    <string name="oauth_client_id">72909054407-ob70e057052cf4h2gvfvqg0pqqujobqo.apps.googleusercontent.com</string>
 </resources>

@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "72909054407",
+    "project_id": "monitorapp1",
+    "storage_bucket": "monitorapp1.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:72909054407:android:e390b292e6f40d3f54f9e2",
+        "android_client_info": {
+          "package_name": "com.monitorapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "72909054407-022kpuh5g3vf6gpqqgvg6ulja74hlq3q.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBRUkoWf5V-FjMlXP_LaYdaBpyQki2hLI8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "72909054407-022kpuh5g3vf6gpqqgvg6ulja74hlq3q.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

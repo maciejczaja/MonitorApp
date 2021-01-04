@@ -3,17 +3,20 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.monitorapp">
 
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
     <uses-permission android:name="android.permission.SEND_SMS" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
     <uses-permission android:name="android.permission.READ_CALL_LOG" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission-sdk-23 android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
 
     <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS"
@@ -46,6 +49,7 @@
         <activity
             android:name=".view.DriveActivity"
             android:parentActivityName=".view.DriveActivity"
+            android:launchMode="singleTop"
             />
         <activity
             android:name=".view.FileUploadActivity"
@@ -55,13 +59,16 @@
         <service android:name=".services.AirplaneModeService" />
         <service android:name=".services.BatteryService" />
         <service android:name=".services.CallService" />
-        <service android:name=".services.ForegroundAppService" />
+        <service android:name=".services.ForegroundAppService"
+            android:permission="android.permission.BIND_JOB_SERVICE"
+            android:exported="true"/>
         <service android:name=".services.NetworkService" />
         <service android:name=".services.NoiseDetectorService" />
         <service android:name=".services.ScreenOnOffService" />
         <service android:name=".services.SensorsService" />
         <service android:name=".services.SmsService" />
         <service android:name=".db_utils.SQLExporter"/>
+        <service android:name=".services.MonitoringNotificationService"/>
 
     </application>
 

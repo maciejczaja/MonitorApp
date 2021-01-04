@@ -37,7 +37,7 @@ public class AirplaneModeService extends Service {
                 unregisterReceiver(mAirplaneModeReceiver);
             }
         } catch (IllegalArgumentException e) {
-            Log.e("Error", "Exception");
+            e.printStackTrace();
         }
     }
 }
