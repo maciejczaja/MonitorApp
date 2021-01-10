@@ -34,31 +34,31 @@ public class SQLExporter extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (BuildConfig.DEBUG) {
-            Log.d(TAG, "Service onStartCommand");
-        }
+        Log.i(TAG, "Service onStartCommand");
 
-        new Thread(() -> {
-            DatabaseHelper dbHelper = DatabaseHelper.getHelper(getApplicationContext());
-            SQLiteDatabase db = dbHelper.getWritableDatabase();
-            File targetDir = createDirectory(csvDirectory.toString());
-            String fileName = generateFileName();
-            File targetFile = new File(targetDir, fileName);
-            try {
-                targetFile.createNewFile();
-            } catch (IOException e){
-                e.printStackTrace();
-            }
-            List<String> tables = DatabaseHelper.getTableNames();
-            try {
-                writeCSV(targetFile, db, tables);
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                db.close();
-            }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                DatabaseHelper dbHelper = DatabaseHelper.getHelper(getApplicationContext());
+                SQLiteDatabase db = dbHelper.getWritableDatabase();
+                File targetDir = createDirectory(csvDirectory.toString());
+                String fileName = generateFileName();
+                File targetFile = new File(targetDir, fileName);
+                try {
+                    targetFile.createNewFile();
+                } catch (IOException e){
+                    e.printStackTrace();
+                }
+                try {
+                    writeCSV(targetFile, db);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    db.close();
+                }
 
-            stopSelf();
+                stopSelf();
+            }
         }).start();
 
         return Service.START_STICKY;
@@ -95,29 +95,21 @@ public class SQLExporter extends Service {
         writer.writeNext(new String[]{value});
     }
 
-    private static void writeCSV(File file, @NotNull SQLiteDatabase db, @NotNull List<String> tables) {
+    private static void writeCSV(File file, SQLiteDatabase db) {
         CSVWriter csvWrite = null;
         Cursor csvCursor = null;
         try {
             csvWrite = new CSVWriter(new FileWriter(file));
-            writeSingleValue(csvWrite, "dbVersion = " + db.getVersion());
-            for (String table: tables) {
-                writeSingleValue(csvWrite, "table=" + table);
-                if (table.equals("Motion_sensors") || table.equals("Data") || table.equals("Call_states") ||
-                        table.equals("States_on_off") || table.equals("Types_on_off")) {
-                    csvCursor = db.rawQuery("SELECT * FROM " + table, null);
-                } else {
-                    csvCursor = db.rawQuery("SELECT * FROM " + table + " LEFT JOIN Data ON " + table + ".id == Data.id", null);
+            writeSingleValue(csvWrite, "DATA");
+            csvCursor = db.rawQuery(DatabaseHelper.getJoinQuery(), null);
+            csvWrite.writeNext(csvCursor.getColumnNames());
+            while(csvCursor.moveToNext()) {
+                int columns = csvCursor.getColumnCount();
+                String[] columnArr = new String[columns];
+                for (int i = 0; i < columns; i++) {
+                    columnArr[i] = csvCursor.getString(i);
                 }
-                csvWrite.writeNext(csvCursor.getColumnNames());
-                while(csvCursor.moveToNext()) {
-                    int columns = csvCursor.getColumnCount();
-                    String[] columnArr = new String[columns];
-                    for (int i = 0; i < columns; i++) {
-                        columnArr[i] = csvCursor.getString(i);
-                    }
-                    csvWrite.writeNext(columnArr);
-                }
+                csvWrite.writeNext(columnArr);
             }
         } catch (IOException e) {
             e.printStackTrace();

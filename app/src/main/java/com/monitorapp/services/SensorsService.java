@@ -41,24 +41,18 @@ public class SensorsService extends Service {
             Date date = new Date(System.currentTimeMillis());
 
             if (values.length == 1) {
-                if (BuildConfig.DEBUG) {
-                    Log.d(String.valueOf(event.sensor.getName()), "x: " + values[0]);
-                }
-                dbHelper.addRecordMotionSensorReadings(UserIDStore.id(getApplicationContext()), sdf.format(date), values[0], null, null, event.sensor.getName());
+                Log.d(String.valueOf(event.sensor.getName()), "x: " + values[0]);
+                dbHelper.addRecordSensorData(UserIDStore.id(getApplicationContext()), sdf.format(date), values[0], null, null, event.sensor.getName());
             }
 
             if (values.length == 2) {
-                if (BuildConfig.DEBUG) {
-                    Log.d(String.valueOf(event.sensor.getName()), "x: " + values[0] + ", y: ");
-                }
-                dbHelper.addRecordMotionSensorReadings(UserIDStore.id(getApplicationContext()), sdf.format(date), values[0], values[1], null, event.sensor.getName());
+                Log.d(String.valueOf(event.sensor.getName()), "x: " + values[0] + ", y: ");
+                dbHelper.addRecordSensorData(UserIDStore.id(getApplicationContext()), sdf.format(date), values[0], values[1], null, event.sensor.getName());
             }
 
             if (values.length == 3) {
-                if (BuildConfig.DEBUG) {
-                    Log.d(String.valueOf(event.sensor.getName()), "x: " + values[0] + ", y: " + values[1] + ", z: " + values[2]);
-                }
-                dbHelper.addRecordMotionSensorReadings(UserIDStore.id(getApplicationContext()), sdf.format(date), values[0], values[1], values[2], event.sensor.getName());
+                Log.d(String.valueOf(event.sensor.getName()), "x: " + values[0] + ", y: " + values[1] + ", z: " + values[2]);
+                dbHelper.addRecordSensorData(UserIDStore.id(getApplicationContext()), sdf.format(date), values[0], values[1], values[2], event.sensor.getName());
             }
         }
     };
