@@ -6,6 +6,7 @@ import android.media.MediaRecorder;
 import android.os.IBinder;
 import android.util.Log;
 
+import com.monitorapp.BuildConfig;
 import com.monitorapp.db_utils.DatabaseHelper;
 import com.monitorapp.db_utils.UserIDStore;
 
@@ -16,7 +17,9 @@ import java.text.SimpleDateFormat;
 public class NoiseDetectorService extends Service {
 
     private MediaRecorder mRecorder = null;
-    public static float dbCount = 40; //start value in dB
+
+    /* start value in dB */
+    public static float dbCount = 40;
     Thread tMic;
     DatabaseHelper dbHelper;
 
@@ -38,7 +41,6 @@ public class NoiseDetectorService extends Service {
                 mRecorder.start();
 
             } catch (IOException exception) {
-                stop();
                 exception.printStackTrace();
             }
 
@@ -47,6 +49,9 @@ public class NoiseDetectorService extends Service {
 
                     while (true) {
                         try {
+                            if (Thread.interrupted()) {
+                                break;
+                            }
                             int volume = mRecorder.getMaxAmplitude();
                             if (volume > 0)
                                 dbCount = 20 * (float) (Math.log10(volume));
@@ -54,13 +59,18 @@ public class NoiseDetectorService extends Service {
                             SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
                             Date date = new Date(System.currentTimeMillis());
 
-                            Log.d("MICROPHONE", String.valueOf(volume) + " " + String
-                                    .valueOf(dbCount));
+                            if (BuildConfig.DEBUG) {
+                                Log.d("MICROPHONE", volume + " " + dbCount);
+                            }
                             dbHelper.addRecordNoiseDetectorData(sdf.format(date), UserIDStore.id(getApplicationContext()), volume, dbCount);
 
-                            Thread.sleep(1000);
+                            if (!Thread.interrupted()) {
+                                Thread.sleep(1000);
+                            }
+
                         } catch (InterruptedException e) {
                             e.printStackTrace();
+                            Thread.currentThread().interrupt();
                             break;
                         }
                     }
@@ -72,18 +82,16 @@ public class NoiseDetectorService extends Service {
         return START_STICKY;
     }
 
-    public void stop() {
+    @Override
+    public void onDestroy() {
         tMic.interrupt();
+
         if (mRecorder != null) {
             mRecorder.stop();
+            mRecorder.reset();
             mRecorder.release();
             mRecorder = null;
         }
-    }
-
-    @Override
-    public void onDestroy() {
-        stop();
         super.onDestroy();
     }
 }

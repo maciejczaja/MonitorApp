@@ -1,26 +1,29 @@
 package com.monitorapp.services;
 
-import android.app.ActivityManager;
+import android.annotation.SuppressLint;
 import android.app.Service;
 import android.app.usage.UsageEvents;
 import android.app.usage.UsageStatsManager;
-import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+import com.monitorapp.BuildConfig;
 import com.monitorapp.db_utils.DatabaseHelper;
 import com.monitorapp.db_utils.UserIDStore;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
+
+import static com.monitorapp.view.MainActivity.PACKAGE_NAME;
+import static com.monitorapp.view.MainActivity.isAppRunning;
 
 public class ForegroundAppService extends Service {
 
@@ -31,17 +34,15 @@ public class ForegroundAppService extends Service {
     private Thread foregroundAppServiceThread = new Thread(() -> {
         while (true) {
             try {
-//                final String foregroundProcessName = getForegroundProcessName();
-                final String foregroundProcessName = getForegroundProcessNameNew();
+                final String foregroundProcessName = getForegroundProcessName();
                 Date currentDateTime = Calendar.getInstance().getTime();
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
                 java.sql.Date date = new java.sql.Date(System.currentTimeMillis());
-                Log.d(TAG, foregroundProcessName + " registered at " + currentDateTime.toString());
+                if (BuildConfig.DEBUG) {
+                    Log.d(TAG, foregroundProcessName + " registered at " + currentDateTime.toString());
+                }
                 dbHelper.addRecordAppData(foregroundProcessName, sdf.format(date), UserIDStore.id(getApplicationContext()));
                 Thread.sleep(delay);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-                return;
             } catch (Exception e) {
                 e.printStackTrace();
                 return;
@@ -57,7 +58,10 @@ public class ForegroundAppService extends Service {
 
     @Override
     public void onCreate() {
-        /* TODO: idk? */
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, ": created");
+        }
+
         super.onCreate();
         dbHelper = DatabaseHelper.getHelper(getApplicationContext());
     }
@@ -65,10 +69,16 @@ public class ForegroundAppService extends Service {
     @Override
     public int onStartCommand(@NotNull Intent intent, int flags, int startId) {
         delay = intent.getLongExtra("DELAY", 5);
-        delay *= 1000; //to milliseconds
+
+        /* convert to milliseconds */
+        delay *= 1000;
+
         foregroundAppServiceThread.start();
 
-        /* restart Service with null passed when terminated by OS */
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, ": thread started");
+        }
+
         return Service.START_STICKY;
     }
 
@@ -76,52 +86,30 @@ public class ForegroundAppService extends Service {
     public void onDestroy() {
         foregroundAppServiceThread.interrupt();
         super.onDestroy();
+
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, ": destroyed, thread interrupted");
+        }
     }
 
-    /*
-    foreground app check logic
-    TODO: refactoring
-    */
+    @SuppressLint("WrongConstant")
     private String getForegroundProcessName() {
 
-        final int PROCESS_STATE_TOP = 2;
-
-        ActivityManager.RunningAppProcessInfo currentInfo = null;
-        Field field = null;
-        try {
-            field = ActivityManager.RunningAppProcessInfo.class.getDeclaredField("processState");
-        } catch (Exception ignored) {
-        }
-        ActivityManager am = (ActivityManager) this.getSystemService(Context.ACTIVITY_SERVICE);
-        List<ActivityManager.RunningAppProcessInfo> appList = am.getRunningAppProcesses();
-        for (ActivityManager.RunningAppProcessInfo app : appList) {
-            if (app.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND
-                    && app.importanceReasonCode == ActivityManager.RunningAppProcessInfo.REASON_UNKNOWN) {
-                Integer state = null;
-                try {
-                    state = field.getInt(app);
-                } catch (Exception e) {
-                }
-                if (state != null && state == PROCESS_STATE_TOP) {
-                    currentInfo = app;
-                    break;
-                }
-            }
-        }
-        return currentInfo.processName;
-    }
-
-    private String getForegroundProcessNameNew() {
-
         String foregroundApp = null;
-        UsageStatsManager usageStatsManager = (UsageStatsManager) this.getSystemService(Service.USAGE_STATS_SERVICE);
+        UsageStatsManager usageStatsManager = null;
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            usageStatsManager = (UsageStatsManager) this.getSystemService(Service.USAGE_STATS_SERVICE);
+        } else {
+            /* for use with API 21 */
+            usageStatsManager = (UsageStatsManager) this.getSystemService("usagestats");
+        }
         long time = System.currentTimeMillis();
 
         UsageEvents usageEvents = usageStatsManager.queryEvents(time - 1000 * 3600, time);
         UsageEvents.Event event = new UsageEvents.Event();
         while (usageEvents.hasNextEvent()) {
             usageEvents.getNextEvent(event);
-            if (event.getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND) {
+            if (event.getEventType() == UsageEvents.Event.ACTIVITY_RESUMED) {
                 foregroundApp = event.getPackageName();
             }
         }

@@ -1,15 +1,16 @@
 package com.monitorapp.db_utils;
 
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
 
+import com.monitorapp.BuildConfig;
 import com.opencsv.CSVWriter;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -24,13 +25,11 @@ public class SQLExporter extends Service {
 
     private static final String TAG = "SQL Exporter";
 
-    private boolean isRunning = false;
-
     @Override
     public void onCreate() {
-        Log.i(TAG, "Service on create");
-
-        isRunning = true;
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, "Service on create");
+        }
     }
 
     @Override
@@ -67,18 +66,21 @@ public class SQLExporter extends Service {
 
     @Override
     public IBinder onBind(Intent arg0) {
-        Log.i(TAG, "Service onBind");
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, "Service onBind");
+        }
         return null;
     }
 
     @Override
     public void onDestroy() {
 
-        isRunning = false;
-
-        Log.i(TAG, "Service onDestroy");
+        if (BuildConfig.DEBUG) {
+            Log.d(TAG, "Service onDestroy");
+        }
     }
 
+    @NotNull
     public static File createDirectory(String path) {
         File dir = new File(path);
         boolean result = true;
@@ -89,7 +91,7 @@ public class SQLExporter extends Service {
         return dir;
     }
 
-    private static void writeSingleValue(CSVWriter writer, String value) {
+    private static void writeSingleValue(@NotNull CSVWriter writer, String value) {
         writer.writeNext(new String[]{value});
     }
 
@@ -125,10 +127,10 @@ public class SQLExporter extends Service {
         }
     }
 
+    @NotNull
     public static String generateFileName() {
         SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy HH.mm.ss");
         Date date = new Date(System.currentTimeMillis());
-        String name = "database_export_" + formatter.format(date) + ".csv";
-        return name;
+        return "database_export_" + formatter.format(date) + ".csv";
     }
 }

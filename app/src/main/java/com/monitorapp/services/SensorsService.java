@@ -9,8 +9,11 @@ import android.hardware.SensorManager;
 import android.os.IBinder;
 import android.util.Log;
 
+import com.monitorapp.BuildConfig;
 import com.monitorapp.db_utils.DatabaseHelper;
 import com.monitorapp.db_utils.UserIDStore;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.sql.Date;
 import java.text.SimpleDateFormat;
@@ -30,7 +33,7 @@ public class SensorsService extends Service {
         public void onAccuracyChanged(Sensor sensor, int accuracy) {
         }
 
-        public void onSensorChanged(SensorEvent event) {
+        public void onSensorChanged(@NotNull SensorEvent event) {
             float[] values = event.values;
             DatabaseHelper dbHelper = DatabaseHelper.getHelper(getApplicationContext());
 
@@ -55,7 +58,7 @@ public class SensorsService extends Service {
     };
 
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
+    public int onStartCommand(@NotNull Intent intent, int flags, int startId) {
 
         int type_sensor = intent.getIntExtra("SENSOR_TYPE", -1);
 

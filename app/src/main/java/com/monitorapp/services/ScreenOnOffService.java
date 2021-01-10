@@ -37,7 +37,7 @@ public class ScreenOnOffService extends Service {
                 unregisterReceiver(mScreenReceiver);
             }
         } catch (IllegalArgumentException e) {
-            Log.e("E", "Exception");
+            e.printStackTrace();
         }
     }
 }

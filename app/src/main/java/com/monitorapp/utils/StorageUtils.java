@@ -1,15 +1,14 @@
 package com.monitorapp.utils;
 
 import android.content.Context;
-import android.os.Build;
-import android.os.Environment;
 import android.util.Log;
+
+import com.monitorapp.BuildConfig;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-
-import static com.monitorapp.view.MainActivity.PACKAGE_NAME;
+import java.util.Objects;
 
 public class StorageUtils {
 
@@ -21,7 +20,9 @@ public class StorageUtils {
         csvDirectory = new File(getCsvStoragePath(context));
         if (!csvDirectory.exists()) {
             csvDirectory.mkdirs();
-            Log.d(TAG, " : Default csv directory created.");
+            if (BuildConfig.DEBUG) {
+                Log.d(TAG, " : Default csv directory created.");
+            }
         }
         return csvDirectory;
     }
@@ -30,24 +31,26 @@ public class StorageUtils {
         zipDirectory = new File(getZipStoragePath(context));
         if (!zipDirectory.exists()) {
             zipDirectory.mkdirs();
-            Log.d(TAG, " : Default zip directory created.");
+            if (BuildConfig.DEBUG) {
+                Log.d(TAG, " : Default zip directory created.");
+            }
         }
         return zipDirectory;
     }
 
     @NotNull
-    public static String getExternalStoragePath(Context context) {
-        return context.getExternalFilesDir(null).toString();
+    public static String getExternalStoragePath(@NotNull Context context) {
+        return Objects.requireNonNull(context.getExternalFilesDir(null)).toString();
     }
 
     @NotNull
     public static String getCsvStoragePath(Context context) {
-        return getExternalStoragePath(context) + "/Android/data/" + PACKAGE_NAME + "/csv/";
+        return getExternalStoragePath(context) + "/csv/";
     }
 
     @NotNull
     public static String getZipStoragePath(Context context) {
-        return getExternalStoragePath(context) + "/Android/data/" + PACKAGE_NAME + "/zip/";
+        return getExternalStoragePath(context) + "/zip/";
     }
 
     public static boolean isCsvStorageWritable() {
